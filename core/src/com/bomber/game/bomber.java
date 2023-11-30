@@ -10,43 +10,51 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class bomber extends ApplicationAdapter {
-	SpriteBatch batch;
-	Texture img;
-	private Texture animationSheet;
-	private TextureRegion[][] frames;
-	private Array<TextureRegion> animationFrames;
-	private float stateTime;
-	private static final float FRAME_DURATION = .5f; // Defina a duração de cada frame da animação
-	
-	@Override
-	public void create () {
-		batch = new SpriteBatch();
-		animationSheet = new Texture(Gdx.files.internal("bomber.png"));
-		frames = TextureRegion.split(animationSheet, animationSheet.getWidth() / 4, animationSheet.getHeight() / 5);
-		animationFrames = new Array<>();
+    SpriteBatch batch;
+    Texture img;
+    private Texture animationSheet;
+    private TextureRegion[][] frames;
+    private Array<TextureRegion> animationFrames;
+    private float stateTime;
+    private static final float FRAME_DURATION = .15f; // Defina a duração de cada frame da animação
 
-		for (int i = 0; i < 5; i++) {
-			for (int j = 0; j < 4; j++) {
-				animationFrames.add(frames[i][j]);
-			}
-		}
+    @Override
+    public void create() {
+        batch = new SpriteBatch();
+        animationSheet = new Texture(Gdx.files.internal("cowboy-front.png"));
+        frames = TextureRegion.split(animationSheet, animationSheet.getWidth() / 2, animationSheet.getHeight() / 2);
+        animationFrames = new Array<>();
 
-		stateTime = 0f;
-	}
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                animationFrames.add(frames[i][j]);
+            }
+        }
 
-	@Override
-	public void render () {
-		Gdx.gl.glClearColor(1, 1, 1, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        stateTime = 0f;
+    }
 
-		stateTime += Gdx.graphics.getDeltaTime();
+    @Override
+    public void render() {
+        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		TextureRegion currentFrame = animationFrames.get((int) (stateTime / FRAME_DURATION) % animationFrames.size);
+        stateTime += Gdx.graphics.getDeltaTime();
+        // Define o número total de quadros da animação
+        int totalFrames = animationFrames.size;
+        // Calcula o índice do próximo quadro
+        int nextFrame = (int) (stateTime / FRAME_DURATION) % totalFrames;
+
+		TextureRegion cf = animationFrames.get(nextFrame);
 
 		// Desenhar o frame atual
 		// (Lembre-se de substituir os valores adequados para a posição e escala)
 		 batch.begin();
-		 batch.draw(currentFrame, 300, 300);
+		 batch.draw(cf, 300, 300);
+         // Se estiver próximo do último quadro, desenha-o novamente para criar a transição suave
+         if (nextFrame == totalFrames - 1) {
+             batch.draw(animationFrames.get(3), 300, 300);
+         }
 		 batch.end();
 	}
 	
