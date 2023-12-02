@@ -9,9 +9,8 @@ import com.badlogic.gdx.utils.Array;
 import com.game.controller.GameStateManager;
 import com.game.model.controls.ChoiceCaracterControl;
 import com.game.model.controls.ControlAdapter;
-import com.game.model.controls.ControlsConfig;
 
-public class ChoiceCaracterState extends GameState {
+public class ChoiceCharacterState extends GameState {
     /**
      * Statics Values
      */
@@ -39,7 +38,7 @@ public class ChoiceCaracterState extends GameState {
     private float modifPositionX;
     private float modifPositionY;
 
-    public ChoiceCaracterState(GameStateManager gameStateManager) {
+    public ChoiceCharacterState(GameStateManager gameStateManager) {
         super(gameStateManager);
     }
 

@@ -16,12 +16,12 @@ public class InputManager implements InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
-        return controler.processarDown(keycode, currentState);
+        return controler.processKeyDown(keycode, currentState);
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        return controler.processarUp(keycode, currentState);
+        return controler.processKeyUp(keycode, currentState);
     }
 
     @Override

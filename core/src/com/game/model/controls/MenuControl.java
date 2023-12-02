@@ -4,12 +4,12 @@ import com.game.model.state.GameState;
 
 public class MenuControl extends ControlAdapter{
     @Override
-    public boolean processarDown(int keycode, GameState currentState) {
+    public boolean processKeyDown(int keycode, GameState currentState) {
         return false;
     }
 
     @Override
-    public boolean processarUp(int keycode, GameState currentState) {
+    public boolean processKeyUp(int keycode, GameState currentState) {
         return false;
     }
 }

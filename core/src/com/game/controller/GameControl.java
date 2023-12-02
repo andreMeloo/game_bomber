@@ -2,7 +2,7 @@ package com.game.controller;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.game.model.state.ChoiceCaracterState;
+import com.game.model.state.ChoiceCharacterState;
 
 
 public class GameControl extends ApplicationAdapter {
@@ -12,7 +12,7 @@ public class GameControl extends ApplicationAdapter {
     @Override
     public void create() {
         gameStateManager = new GameStateManager();
-        gameStateManager.setState(new ChoiceCaracterState(gameStateManager));
+        gameStateManager.setState(new ChoiceCharacterState(gameStateManager));
         inputManager = new InputManager(gameStateManager.getCurrentState().getControler(), gameStateManager.getCurrentState());
         setInput();
     }
