@@ -15,6 +15,8 @@ public class GameControl extends Game {
 
     @Override
     public void create() {
+        batch = new SpriteBatch();
+        font = new BitmapFont(); // use libGDX's default Arial font
         this.setScreen(new ChoiceCharacterScreen(this));
         setInput();
     }
@@ -31,6 +33,7 @@ public class GameControl extends Game {
     public void dispose() {
         batch.dispose();
         font.dispose();
+        this.getScreen().dispose();
     }
 
     private void setInput() {
