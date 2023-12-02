@@ -1,7 +1,7 @@
 package com.game.model.controls;
 
-import com.game.model.state.ChoiceCharacterState;
-import com.game.model.state.GameState;
+import com.game.model.state.ChoiceCharacterScreen;
+import com.game.model.state.ScreenAdapter;
 
 import java.util.*;
 
@@ -9,8 +9,8 @@ public class ChoiceCaracterControl extends ControlAdapter {
     Stack<Integer> keys = new Stack<>();
 
     @Override
-    public boolean processKeyDown(int keycode, GameState currentState) {
-        ChoiceCharacterState state = (ChoiceCharacterState) currentState;
+    public boolean processKeyDown(int keycode, ScreenAdapter currentScreen) {
+        ChoiceCharacterScreen state = (ChoiceCharacterScreen) currentScreen;
         if (!keys.contains(keycode))
             keys.push(keycode);
 
@@ -30,14 +30,14 @@ public class ChoiceCaracterControl extends ControlAdapter {
     }
 
     @Override
-    public boolean processKeyUp(int keycode, GameState currentState) {
+    public boolean processKeyUp(int keycode, ScreenAdapter currentScreen) {
         keys.removeElement(keycode);
 
         if (!keys.isEmpty()) {
-            return processKeyDown(keys.peek(), currentState);
+            return processKeyDown(keys.peek(), currentScreen);
         }
 
-        ChoiceCharacterState state = (ChoiceCharacterState) currentState;
+        ChoiceCharacterScreen state = (ChoiceCharacterScreen) currentScreen;
         if (ControlsConfig.isPressUP(keycode)) {
             popularState(state, 4, 1, 0, 0);
         } else if (ControlsConfig.isPressDOWN(keycode)) {
@@ -51,7 +51,7 @@ public class ChoiceCaracterControl extends ControlAdapter {
         return true;
     }
 
-    public void popularState(ChoiceCharacterState currentState, int row, int columns, float modifPositionX, float modifPositionY) {
+    public void popularState(ChoiceCharacterScreen currentState, int row, int columns, float modifPositionX, float modifPositionY) {
         currentState.setRow(row);
         currentState.setColuns(columns);
         currentState.setModifPositionX(modifPositionX);
