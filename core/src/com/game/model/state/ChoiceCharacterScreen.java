@@ -2,9 +2,7 @@ package com.game.model.state;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -43,7 +41,6 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
     public ChoiceCharacterScreen(final GameControl gameControl) {
         this.gameControl = gameControl;
-        this.gameControl.setInputManager(new InputManager(getControler(), this));
         stateTime = 0f;
         positionX = 300f;
         positionY = 300f;
@@ -52,6 +49,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         row = 1;
         coluns = 1;
         loadAnimationSheet(PLAYER, TILESET_WIDTH, TILESET_HEIGHT);
+        this.gameControl.setInputManager(new InputManager(getControler(), this));
     }
 
     @Override
@@ -177,5 +175,29 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
     public void setModifPositionY(float modifPositionY) {
         this.modifPositionY = modifPositionY;
+    }
+
+    public Texture getAnimationSheet() {
+        return animationSheet;
+    }
+
+    public void setAnimationSheet(Texture animationSheet) {
+        this.animationSheet = animationSheet;
+    }
+
+    public TextureRegion[][] getFrames() {
+        return frames;
+    }
+
+    public void setFrames(TextureRegion[][] frames) {
+        this.frames = frames;
+    }
+
+    public Array<TextureRegion> getAnimationFrames() {
+        return animationFrames;
+    }
+
+    public void setAnimationFrames(Array<TextureRegion> animationFrames) {
+        this.animationFrames = animationFrames;
     }
 }

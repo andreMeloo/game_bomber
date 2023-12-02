@@ -1,8 +1,6 @@
 package com.game.model.state;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
 import com.game.controller.GameControl;
 import com.game.controller.InputManager;
 import com.game.model.controls.ControlAdapter;
