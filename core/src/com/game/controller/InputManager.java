@@ -4,6 +4,8 @@ import com.badlogic.gdx.InputProcessor;
 import com.game.model.controls.ControlAdapter;
 import com.game.model.state.GameState;
 
+import java.util.Stack;
+
 public class InputManager implements InputProcessor {
 
     private ControlAdapter controler;

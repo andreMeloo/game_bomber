@@ -2,6 +2,10 @@ package com.game.model.controls;
 
 import com.badlogic.gdx.Input;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class ControlsConfig {
     public final static int UP = Input.Keys.UP;
     public final static int DOWN = Input.Keys.DOWN;
@@ -37,5 +41,11 @@ public class ControlsConfig {
 
     public static boolean isPressSTART(int keyCode) {
         return keyCode == START;
+    }
+
+    public static List<Integer> getButtonsMove() {
+        return Arrays.asList(
+                UP, DOWN, LEFT, RIGHT
+        );
     }
 }

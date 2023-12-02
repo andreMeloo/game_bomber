@@ -32,7 +32,6 @@ public class ChoiceCharacterState extends GameState {
     private float stateTime;
     private float positionX = 0f;
     private float positionY = 0f;
-    private int frameInit;
     private int row;
     private int coluns;
     private float modifPositionX;
@@ -49,13 +48,12 @@ public class ChoiceCharacterState extends GameState {
             stateTime = 0f;
             positionX = 300f;
             positionY = 300f;
-            frameInit = 0;
             modifPositionX = 0;
             modifPositionY = 0;
             row = 1;
             coluns = 1;
             loadAnimationSheet(PLAYER, TILESET_WIDTH, TILESET_HEIGHT);
-            loadAnimationFrame(row,coluns,frameInit,modifPositionX,modifPositionY);
+            loadAnimationFrame(row,coluns,modifPositionX,modifPositionY);
             initialized = true;
         }
     }
@@ -63,7 +61,7 @@ public class ChoiceCharacterState extends GameState {
     @Override
     public void update() {
         if (initialized)
-            loadAnimationFrame(row, coluns, frameInit, modifPositionX, modifPositionY);
+            loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
     }
 
     @Override
@@ -90,11 +88,6 @@ public class ChoiceCharacterState extends GameState {
 
         batch.begin();
         batch.draw(currentFrame, positionX, positionY);
-        if (restartAnimation) {
-            if (nextFrame == totalFrames - 1) {
-                batch.draw(animationFrames.get(frameInit), positionX, positionY);
-            }
-        }
         batch.end();
     }
 
@@ -103,7 +96,7 @@ public class ChoiceCharacterState extends GameState {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
-    private void loadAnimationFrame(int row, int coluns, int frameInit, float modifPositionX, float modifPositionY) {
+    private void loadAnimationFrame(int row, int coluns, float modifPositionX, float modifPositionY) {
         this.row = row;
         animationFrames = new Array<>();
         for (int i = this.row - 1; i < this.row; i++) {
@@ -113,7 +106,6 @@ public class ChoiceCharacterState extends GameState {
         }
         positionX += modifPositionX;
         positionY += modifPositionY;
-        this.frameInit = frameInit;
     }
 
     private void loadAnimationSheet(String sheet, int tileRows, int tileColuns) {
@@ -143,14 +135,6 @@ public class ChoiceCharacterState extends GameState {
 
     public void setPositionY(float positionY) {
         this.positionY = positionY;
-    }
-
-    public int getFrameInit() {
-        return frameInit;
-    }
-
-    public void setFrameInit(int frameInit) {
-        this.frameInit = frameInit;
     }
 
     public int getRow() {
