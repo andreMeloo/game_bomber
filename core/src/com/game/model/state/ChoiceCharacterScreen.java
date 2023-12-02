@@ -1,16 +1,21 @@
 package com.game.model.state;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
-import com.game.controller.GameStateManager;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.game.controller.GameControl;
+import com.game.controller.InputManager;
 import com.game.model.controls.ChoiceCaracterControl;
 import com.game.model.controls.ControlAdapter;
 
-public class ChoiceCharacterState extends GameState {
+public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
+    final GameControl gameControl;
+
     /**
      * Statics Values
      */
@@ -37,43 +42,56 @@ public class ChoiceCharacterState extends GameState {
     private float modifPositionX;
     private float modifPositionY;
 
-    public ChoiceCharacterState(GameStateManager gameStateManager) {
-        super(gameStateManager);
+    public ChoiceCharacterScreen(final GameControl gameControl) {
+        this.gameControl = gameControl;
+        this.gameControl.setInputManager(new InputManager(getControler(), this));
+        batch = new SpriteBatch();
+        stateTime = 0f;
+        positionX = 300f;
+        positionY = 300f;
+        modifPositionX = 0;
+        modifPositionY = 0;
+        row = 1;
+        coluns = 1;
+        loadAnimationSheet(PLAYER, TILESET_WIDTH, TILESET_HEIGHT);
     }
 
     @Override
-    public void initializedState() {
-        if (!initialized) {
-            batch = new SpriteBatch();
-            stateTime = 0f;
-            positionX = 300f;
-            positionY = 300f;
-            modifPositionX = 0;
-            modifPositionY = 0;
-            row = 1;
-            coluns = 1;
-            loadAnimationSheet(PLAYER, TILESET_WIDTH, TILESET_HEIGHT);
-            loadAnimationFrame(row,coluns,modifPositionX,modifPositionY);
-            initialized = true;
-        }
+    public void show() {
+
     }
 
     @Override
-    public void update() {
-        if (initialized)
-            loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
-    }
-
-    @Override
-    public void render() {
-        initializedState();
-        setBGColor();
+    public void render(float delta) {
+        ScreenUtils.clear(1,1,1,1);
+        loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
         renderAnimationFrames(animationFrames.size, Gdx.graphics.getDeltaTime(), true);
+    }
+
+    @Override
+    public void resize(int width, int height) {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void hide() {
+
     }
 
     @Override
     public void dispose() {
         animationSheet.dispose();
+        batch.dispose();
     }
 
     @Override
@@ -89,11 +107,6 @@ public class ChoiceCharacterState extends GameState {
         batch.begin();
         batch.draw(currentFrame, positionX, positionY);
         batch.end();
-    }
-
-    private void setBGColor() {
-        Gdx.gl.glClearColor(1, 1, 1, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 
     private void loadAnimationFrame(int row, int coluns, float modifPositionX, float modifPositionY) {

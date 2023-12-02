@@ -1,15 +1,15 @@
 package com.game.model.controls;
 
-import com.game.model.state.GameState;
+import com.game.model.state.ScreenAdapter;
 
 public class MenuControl extends ControlAdapter{
     @Override
-    public boolean processKeyDown(int keycode, GameState currentState) {
+    public boolean processKeyDown(int keycode, ScreenAdapter currentState) {
         return false;
     }
 
     @Override
-    public boolean processKeyUp(int keycode, GameState currentState) {
+    public boolean processKeyUp(int keycode, ScreenAdapter currentState) {
         return false;
     }
 }

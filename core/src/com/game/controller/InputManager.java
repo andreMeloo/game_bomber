@@ -2,28 +2,26 @@ package com.game.controller;
 
 import com.badlogic.gdx.InputProcessor;
 import com.game.model.controls.ControlAdapter;
-import com.game.model.state.GameState;
-
-import java.util.Stack;
+import com.game.model.state.ScreenAdapter;
 
 public class InputManager implements InputProcessor {
 
     private ControlAdapter controler;
-    private GameState currentState;
+    private ScreenAdapter currentScreen;
 
-    public InputManager(ControlAdapter controler, GameState currentState) {
+    public InputManager(ControlAdapter controler, ScreenAdapter currentState) {
         this.controler = controler;
-        this.currentState = currentState;
+        this.currentScreen = currentState;
     }
 
     @Override
     public boolean keyDown(int keycode) {
-        return controler.processKeyDown(keycode, currentState);
+        return controler.processKeyDown(keycode, currentScreen);
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        return controler.processKeyUp(keycode, currentState);
+        return controler.processKeyUp(keycode, currentScreen);
     }
 
     @Override
@@ -69,11 +67,11 @@ public class InputManager implements InputProcessor {
         this.controler = controler;
     }
 
-    public GameState getCurrentState() {
-        return currentState;
+    public ScreenAdapter getCurrentScreen() {
+        return currentScreen;
     }
 
-    public void setCurrentState(GameState currentState) {
-        this.currentState = currentState;
+    public void setCurrentScreen(ScreenAdapter currentScreen) {
+        this.currentScreen = currentScreen;
     }
 }
