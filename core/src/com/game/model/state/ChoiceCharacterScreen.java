@@ -25,7 +25,6 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     private static final int TILESET_HEIGHT = 4;
 
 
-    SpriteBatch batch;
     private Texture animationSheet;
     private TextureRegion[][] frames;
     private Array<TextureRegion> animationFrames;
@@ -45,7 +44,6 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     public ChoiceCharacterScreen(final GameControl gameControl) {
         this.gameControl = gameControl;
         this.gameControl.setInputManager(new InputManager(getControler(), this));
-        batch = new SpriteBatch();
         stateTime = 0f;
         positionX = 300f;
         positionY = 300f;
@@ -63,7 +61,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(1,1,1,1);
+        ScreenUtils.clear(1, 1, 1, 1);
         loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
         renderAnimationFrames(animationFrames.size, Gdx.graphics.getDeltaTime(), true);
     }
@@ -91,7 +89,6 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     @Override
     public void dispose() {
         animationSheet.dispose();
-        batch.dispose();
     }
 
     @Override
@@ -104,9 +101,9 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         int nextFrame = (int) (stateTime / FRAME_DURATION) % totalFrames;
         TextureRegion currentFrame = animationFrames.get(nextFrame);
 
-        batch.begin();
-        batch.draw(currentFrame, positionX, positionY);
-        batch.end();
+        gameControl.batch.begin();
+        gameControl.batch.draw(currentFrame, positionX, positionY);
+        gameControl.batch.end();
     }
 
     private void loadAnimationFrame(int row, int coluns, float modifPositionX, float modifPositionY) {
