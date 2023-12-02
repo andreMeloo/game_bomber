@@ -48,4 +48,8 @@ public class ControlsConfig {
                 UP, DOWN, LEFT, RIGHT
         );
     }
+
+    public String toString(int controlConfig) {
+        return String.valueOf(controlConfig);
+    }
 }
