@@ -17,7 +17,7 @@ public class GameControl extends Game {
     public void create() {
         batch = new SpriteBatch();
         font = new BitmapFont(); // use libGDX's default Arial font
-        this.setScreen(new ChoiceCharacterScreen(this));
+        this.setScreen(new MenuScreen(this));
         setInput();
     }
 

@@ -56,7 +56,7 @@ public class ChoiceCaracterControl extends ControlAdapter {
         getScreen().setModifPositionY(modifPositionY);
     }
 
-    public void constructKeyOperation() {
+    private void constructKeyOperation() {
         keyOperations.put(INPUT_KEY_UP + ControlsConfig.DOWN, () -> popularState(1, 1, 0, 0));
         keyOperations.put(INPUT_KEY_UP + ControlsConfig.LEFT, () -> popularState(2, 1, 0, 0));
         keyOperations.put(INPUT_KEY_UP + ControlsConfig.RIGHT, () -> popularState(3, 1, 0, 0));

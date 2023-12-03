@@ -2,6 +2,7 @@ package com.game.model.state;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
@@ -26,6 +27,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     private Texture animationSheet;
     private TextureRegion[][] frames;
     private Array<TextureRegion> animationFrames;
+    private OrthographicCamera menuCamera;
 
 
     /**
@@ -41,6 +43,10 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
     public ChoiceCharacterScreen(final GameControl gameControl) {
         this.gameControl = gameControl;
+    }
+
+    @Override
+    public void show() {
         stateTime = 0f;
         positionX = 300f;
         positionY = 300f;
@@ -50,16 +56,16 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         coluns = 1;
         loadAnimationSheet(PLAYER, TILESET_WIDTH, TILESET_HEIGHT);
         this.gameControl.setInputManager(new InputManager(getControler(), this));
-    }
-
-    @Override
-    public void show() {
-
+        menuCamera = new OrthographicCamera();
+        menuCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(1, 1, 1, 1);
+
+        menuCamera.update();
+        gameControl.batch.setProjectionMatrix(menuCamera.combined);
         loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
         renderAnimationFrames(animationFrames.size, Gdx.graphics.getDeltaTime(), true);
     }
@@ -92,6 +98,41 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     @Override
     public ControlAdapter getControler() {
         return new ChoiceCaracterControl();
+    }
+
+    @Override
+    public boolean pressUp() {
+        return false;
+    }
+
+    @Override
+    public boolean pressDown() {
+        return false;
+    }
+
+    @Override
+    public boolean pressLeft() {
+        return false;
+    }
+
+    @Override
+    public boolean pressRight() {
+        return false;
+    }
+
+    @Override
+    public boolean pressActionA() {
+        return false;
+    }
+
+    @Override
+    public boolean pressActionY() {
+        return false;
+    }
+
+    @Override
+    public boolean pressStart() {
+        return false;
     }
 
     private void renderAnimationFrames(int totalFrames, float incrementStateTime, boolean restartAnimation) {
