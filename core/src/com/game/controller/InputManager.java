@@ -2,7 +2,7 @@ package com.game.controller;
 
 import com.badlogic.gdx.InputProcessor;
 import com.game.model.controls.ControlAdapter;
-import com.game.model.state.ScreenAdapter;
+import com.game.View.screen.ScreenAdapter;
 
 public class InputManager implements InputProcessor {
 

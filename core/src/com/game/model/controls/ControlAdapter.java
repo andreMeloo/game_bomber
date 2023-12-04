@@ -1,6 +1,6 @@
 package com.game.model.controls;
 
-import com.game.model.state.ScreenAdapter;
+import com.game.View.screen.ScreenAdapter;
 
 public abstract class ControlAdapter {
     public abstract boolean processKeyDown(int keycode, ScreenAdapter currentScreen);
