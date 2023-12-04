@@ -1,4 +1,4 @@
-package com.game.model.state;
+package com.game.View.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -7,13 +7,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.game.controller.GameControl;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.ChoiceCaracterControl;
 import com.game.model.controls.ControlAdapter;
 
 public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
-    final GameControl gameControl;
+    final GameManager gameManager;
 
     /**
      * Statics Values
@@ -27,7 +29,6 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     private Texture animationSheet;
     private TextureRegion[][] frames;
     private Array<TextureRegion> animationFrames;
-    private OrthographicCamera menuCamera;
 
 
     /**
@@ -41,8 +42,11 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     private float modifPositionX;
     private float modifPositionY;
 
-    public ChoiceCharacterScreen(final GameControl gameControl) {
-        this.gameControl = gameControl;
+
+    public ChoiceCharacterScreen(final GameManager gameManager) {
+        this.gameManager = gameManager;
+        this.gameManager.setInputManager(new InputManager(getControler(), this));
+        this.gameManager.setInput();
     }
 
     @Override
@@ -54,18 +58,12 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         modifPositionY = 0;
         row = 1;
         coluns = 1;
-        loadAnimationSheet(PLAYER, TILESET_WIDTH, TILESET_HEIGHT);
-        this.gameControl.setInputManager(new InputManager(getControler(), this));
-        menuCamera = new OrthographicCamera();
-        menuCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        loadAnimationSheet();
     }
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(1, 1, 1, 1);
-
-        menuCamera.update();
-        gameControl.batch.setProjectionMatrix(menuCamera.combined);
+        ScreenUtils.clear(74f / 255, 173f / 255, 59f / 255, .68f);
         loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
         renderAnimationFrames(animationFrames.size, Gdx.graphics.getDeltaTime(), true);
     }
@@ -140,9 +138,9 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         int nextFrame = (int) (stateTime / FRAME_DURATION) % totalFrames;
         TextureRegion currentFrame = animationFrames.get(nextFrame);
 
-        gameControl.batch.begin();
-        gameControl.batch.draw(currentFrame, positionX, positionY);
-        gameControl.batch.end();
+        gameManager.batch.begin();
+        gameManager.batch.draw(currentFrame, positionX, positionY);
+        gameManager.batch.end();
     }
 
     private void loadAnimationFrame(int row, int coluns, float modifPositionX, float modifPositionY) {
@@ -157,9 +155,9 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         positionY += modifPositionY;
     }
 
-    private void loadAnimationSheet(String sheet, int tileRows, int tileColuns) {
-        animationSheet = new Texture(Gdx.files.internal(sheet));
-        frames = TextureRegion.split(animationSheet, animationSheet.getWidth() / tileRows, animationSheet.getHeight() / tileColuns);
+    private void loadAnimationSheet() {
+        animationSheet = new Texture(Gdx.files.internal(ChoiceCharacterScreen.PLAYER));
+        frames = TextureRegion.split(animationSheet, animationSheet.getWidth() / ChoiceCharacterScreen.TILESET_WIDTH, animationSheet.getHeight() / ChoiceCharacterScreen.TILESET_HEIGHT);
     }
 
     public float getStateTime() {

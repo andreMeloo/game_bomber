@@ -1,4 +1,4 @@
-package com.game.model.state;
+package com.game.View.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -9,48 +9,50 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.utils.Array;
-import com.game.controller.GameControl;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.ControlAdapter;
 import com.game.model.controls.MenuControl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class MenuScreen extends ScreenAdapter implements Screen {
-    final GameControl gameControl;
+    final GameManager gameManager;
     private Stage stage;
     private Label startGameLabel;
     private Label exitLabel;
     private BitmapFont font;
     private Actor selectedOption; // Índice da opção selecionada
     private ShapeRenderer shapeRenderer;
+    private Viewport viewport;
 
-    public MenuScreen(final GameControl gameControl) {
-        stage = new Stage();
-        this.gameControl = gameControl;
-        this.gameControl.setInputManager(new InputManager(getControler(), this));
+    public MenuScreen(final GameManager gameManager) {
+        viewport = new ScreenViewport();
+        stage = new Stage(viewport);
+        this.gameManager = gameManager;
+        this.gameManager.setInputManager(new InputManager(getControler(), this));
+        this.gameManager.setInput();
     }
 
     @Override
     public void show() {
         font = new BitmapFont(); // Você pode configurar a fonte aqui
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
+        shapeRenderer = new ShapeRenderer();
+        LabelStyle labelStyle = new LabelStyle(font, Color.WHITE);
 
         startGameLabel = new Label("Iniciar Jogo", labelStyle);
         exitLabel = new Label("Sair", labelStyle);
 
-        // Posicionamento das labels
-        startGameLabel.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f);
-        exitLabel.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f - 50f);
+        // Posicionamento das labels dentro do Stage
+        startGameLabel.setPosition(stage.getWidth() / 2f - startGameLabel.getWidth() / 2f, stage.getHeight() / 2f);
+        exitLabel.setPosition(stage.getWidth() / 2f - exitLabel.getWidth() / 2f, stage.getHeight() / 2f - 50f);
 
         stage.addActor(startGameLabel);
         stage.addActor(exitLabel);
-        selectedOption = stage.getActors().first();
-        shapeRenderer = new ShapeRenderer();
+        selectedOption = filterActorsByType(Label.class, stage.getActors()).first();
     }
 
     @Override
@@ -64,7 +66,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height, true);
     }
 
     @Override
@@ -119,7 +121,14 @@ public class MenuScreen extends ScreenAdapter implements Screen {
 
     @Override
     public boolean pressActionA() {
-        return false;
+        if (getSelectedOption().equals(startGameLabel)) {
+            dispose();
+            gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
+        } else if (getSelectedOption().equals(exitLabel)) {
+            Gdx.app.exit();
+        }
+
+        return true;
     }
 
     @Override
@@ -129,8 +138,12 @@ public class MenuScreen extends ScreenAdapter implements Screen {
 
     @Override
     public boolean pressStart() {
-        if (getSelectedOption().equals(startGameLabel))
-            System.out.println("Apertei Enter");
+        if (getSelectedOption().equals(startGameLabel)) {
+            dispose();
+            gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
+        } else if (getSelectedOption().equals(exitLabel)) {
+            Gdx.app.exit();
+        }
 
         return true;
     }
@@ -140,7 +153,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.RED);
 
-        shapeRenderer.rect(selectedActor.getX() - 10, selectedActor.getY() -10,
+        shapeRenderer.rect(selectedActor.getX() - 10, selectedActor.getY() - 10,
                 selectedActor.getWidth() + 20, selectedActor.getHeight() + 20);
 
         shapeRenderer.end();

@@ -1,8 +1,7 @@
 package com.game.model.controls;
 
-import com.game.model.state.ChoiceCharacterScreen;
-import com.game.model.state.MenuScreen;
-import com.game.model.state.ScreenAdapter;
+import com.game.View.screen.MenuScreen;
+import com.game.View.screen.ScreenAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,5 +37,6 @@ public class MenuControl extends ControlAdapter{
         keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.DOWN, () -> screen.pressDown());
         keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.UP, () -> screen.pressUp());
         keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.START, () -> screen.pressStart());
+        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.ACTION_A, () -> screen.pressActionA());
     }
 }

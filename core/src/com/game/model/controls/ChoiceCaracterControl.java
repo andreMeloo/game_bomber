@@ -1,7 +1,8 @@
 package com.game.model.controls;
 
-import com.game.model.state.ChoiceCharacterScreen;
-import com.game.model.state.ScreenAdapter;
+import com.badlogic.gdx.Input;
+import com.game.View.screen.ChoiceCharacterScreen;
+import com.game.View.screen.ScreenAdapter;
 
 import java.util.*;
 
@@ -61,10 +62,10 @@ public class ChoiceCaracterControl extends ControlAdapter {
         keyOperations.put(INPUT_KEY_UP + ControlsConfig.LEFT, () -> popularState(2, 1, 0, 0));
         keyOperations.put(INPUT_KEY_UP + ControlsConfig.RIGHT, () -> popularState(3, 1, 0, 0));
         keyOperations.put(INPUT_KEY_UP + ControlsConfig.UP, () -> popularState(4, 1, 0, 0));
-        keyOperations.put(INPUT_KEY_DOWN + ControlsConfig.DOWN, () -> popularState(1, 4, 0, -1f));
-        keyOperations.put(INPUT_KEY_DOWN + ControlsConfig.LEFT, () -> popularState(2, 4, -1f, 0));
-        keyOperations.put(INPUT_KEY_DOWN + ControlsConfig.RIGHT, () -> popularState(3, 4, 1f, 0));
-        keyOperations.put(INPUT_KEY_DOWN + ControlsConfig.UP, () -> popularState(4, 4, 0, 1f));
+        keyOperations.put(INPUT_KEY_DOWN + ControlsConfig.DOWN, () -> popularState(1, 4, 0, -2f));
+        keyOperations.put(INPUT_KEY_DOWN + ControlsConfig.LEFT, () -> popularState(2, 4, -2f, 0));
+        keyOperations.put(INPUT_KEY_DOWN + ControlsConfig.RIGHT, () -> popularState(3, 4, 2f, 0));
+        keyOperations.put(INPUT_KEY_DOWN + ControlsConfig.UP, () -> popularState(4, 4, 0, 2f));
     }
 
     public ChoiceCharacterScreen getScreen() {
