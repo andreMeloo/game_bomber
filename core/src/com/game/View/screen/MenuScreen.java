@@ -18,6 +18,7 @@ import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.ControlAdapter;
 import com.game.model.controls.MenuControl;
+import com.game.util.UniversalUtil;
 
 public class MenuScreen extends ScreenAdapter implements Screen {
     final GameManager gameManager;
@@ -52,7 +53,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
 
         stage.addActor(startGameLabel);
         stage.addActor(exitLabel);
-        selectedOption = filterActorsByType(Label.class, stage.getActors()).first();
+        selectedOption = UniversalUtil.filterActorsByType(Label.class, stage.getActors()).first();
     }
 
     @Override
@@ -160,7 +161,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
     }
 
     private Actor getNextLabelActor(int currentIndex, boolean upDirection) {
-        Array<Label> labelActors = filterActorsByType(Label.class, stage.getActors());
+        Array<Label> labelActors = UniversalUtil.filterActorsByType(Label.class, stage.getActors());
 
         int nextIndex;
 

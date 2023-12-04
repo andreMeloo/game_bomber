@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MenuControl extends ControlAdapter{
-    MenuScreen screen;
+    ScreenAdapter screen;
     private final Map<String, Runnable> keyOperations = new HashMap<>();
 
     public MenuControl() {
@@ -16,7 +16,7 @@ public class MenuControl extends ControlAdapter{
 
     @Override
     public boolean processKeyDown(int keycode, ScreenAdapter currentScreen) {
-        setScreen((MenuScreen) currentScreen);
+        setScreen(currentScreen);
         Runnable operation = keyOperations.get(ControlsConfig.INPUT_KEY_DOWN + keycode);
         if (operation != null)
             operation.run();
@@ -29,7 +29,7 @@ public class MenuControl extends ControlAdapter{
         return false;
     }
 
-    public void setScreen(MenuScreen screen) {
+    public void setScreen(ScreenAdapter screen) {
         this.screen = screen;
     }
 
