@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.ControlAdapter;
@@ -16,6 +15,7 @@ import com.game.model.controls.MenuControl;
 import com.game.util.UniversalUtil;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -43,7 +43,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     @Override
     public void show() {
         shapeRenderer = new ShapeRenderer();
-        imagePositions = new HashMap<>();
+        imagePositions = new LinkedHashMap<>();
         textureSelectCaracter = new Texture(Gdx.files.internal(CHARACTER));
         float stageCenterX = stage.getWidth() / 2f;
         float stageCenterY = stage.getHeight() / 2f;
