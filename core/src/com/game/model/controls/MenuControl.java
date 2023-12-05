@@ -6,7 +6,7 @@ import com.game.View.screen.ScreenAdapter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MenuControl extends ControlAdapter{
+public class MenuControl extends ControlAdapter {
     ScreenAdapter screen;
     private final Map<String, Runnable> keyOperations = new HashMap<>();
 
@@ -34,9 +34,12 @@ public class MenuControl extends ControlAdapter{
     }
 
     public void constructKeyOperation() {
-        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.DOWN, () -> screen.pressDown());
-        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.UP, () -> screen.pressUp());
-        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.START, () -> screen.pressStart());
-        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.ACTION_A, () -> screen.pressActionA());
+        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.DOWN, () -> screen.pressDown(true));
+        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.UP, () -> screen.pressUp(true));
+        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.LEFT, () -> screen.pressLeft(true));
+        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.RIGHT, () -> screen.pressRight(true));
+        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.START, () -> screen.pressStart(true));
+        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.ACTION_A, () -> screen.pressActionA(true));
+        keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.ACTION_Y, () -> screen.pressActionY(true));
     }
 }

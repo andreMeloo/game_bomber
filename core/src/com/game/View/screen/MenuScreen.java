@@ -11,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.controller.GameManager;
@@ -23,17 +22,15 @@ import com.game.util.UniversalUtil;
 public class MenuScreen extends ScreenAdapter implements Screen {
     final GameManager gameManager;
     private Stage stage;
-    private Label startGameLabel;
+    private Label choiceCharacterLabel;
     private Label exitLabel;
     private BitmapFont font;
     private Actor selectedOption; // Índice da opção selecionada
     private ShapeRenderer shapeRenderer;
-    private Viewport viewport;
 
     public MenuScreen(final GameManager gameManager) {
-        viewport = new ScreenViewport();
-        stage = new Stage(viewport);
         this.gameManager = gameManager;
+        stage = new Stage();
         this.gameManager.setInputManager(new InputManager(getControler(), this));
         this.gameManager.setInput();
     }
@@ -44,14 +41,16 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         shapeRenderer = new ShapeRenderer();
         LabelStyle labelStyle = new LabelStyle(font, Color.WHITE);
 
-        startGameLabel = new Label("Iniciar Jogo", labelStyle);
+        choiceCharacterLabel = new Label("Adventure Mode", labelStyle);
         exitLabel = new Label("Sair", labelStyle);
 
-        // Posicionamento das labels dentro do Stage
-        startGameLabel.setPosition(stage.getWidth() / 2f - startGameLabel.getWidth() / 2f, stage.getHeight() / 2f);
-        exitLabel.setPosition(stage.getWidth() / 2f - exitLabel.getWidth() / 2f, stage.getHeight() / 2f - 50f);
+        float stageCenterX = stage.getWidth() / 2f;
+        float stageCenterY = stage.getHeight() / 2f;
 
-        stage.addActor(startGameLabel);
+        choiceCharacterLabel.setPosition(stageCenterX - choiceCharacterLabel.getWidth() / 2, stageCenterY);
+        exitLabel.setPosition(stageCenterX - exitLabel.getWidth() / 2, stageCenterY - 50f); // Ajuste a posição vertical como desejado
+
+        stage.addActor(choiceCharacterLabel);
         stage.addActor(exitLabel);
         selectedOption = UniversalUtil.filterActorsByType(Label.class, stage.getActors()).first();
     }
@@ -61,13 +60,12 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act();
         stage.draw();
-
-        drawSelectionBorder(selectedOption);
+        UniversalUtil.drawSelectionBorder(selectedOption, shapeRenderer);
     }
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height, true);
+
     }
 
     @Override
@@ -97,32 +95,32 @@ public class MenuScreen extends ScreenAdapter implements Screen {
     }
 
     @Override
-    public boolean pressUp() {
+    public boolean pressUp(boolean isTypeKeyPressDOWN) {
         selectedOption = getNextLabelActor(stage.getActors().indexOf(selectedOption, false), true);
 
         return true;
     }
 
     @Override
-    public boolean pressDown() {
+    public boolean pressDown(boolean isTypeKeyPressDOWN) {
         selectedOption = getNextLabelActor(stage.getActors().indexOf(selectedOption, false), false);
 
         return true;
     }
 
     @Override
-    public boolean pressLeft() {
+    public boolean pressLeft(boolean isTypeKeyPressDOWN) {
         return false;
     }
 
     @Override
-    public boolean pressRight() {
+    public boolean pressRight(boolean isTypeKeyPressDOWN) {
         return false;
     }
 
     @Override
-    public boolean pressActionA() {
-        if (getSelectedOption().equals(startGameLabel)) {
+    public boolean pressActionA(boolean isTypeKeyPressDOWN) {
+        if (getSelectedOption().equals(choiceCharacterLabel)) {
             dispose();
             gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
         } else if (getSelectedOption().equals(exitLabel)) {
@@ -133,13 +131,19 @@ public class MenuScreen extends ScreenAdapter implements Screen {
     }
 
     @Override
-    public boolean pressActionY() {
-        return false;
+    public boolean pressActionY(boolean isTypeKeyPressDOWN) {
+        if (getSelectedOption().equals(choiceCharacterLabel)) {
+            selectedOption = stage.getActors().get(stage.getActors().indexOf(exitLabel, false));
+        } else {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
-    public boolean pressStart() {
-        if (getSelectedOption().equals(startGameLabel)) {
+    public boolean pressStart(boolean isTypeKeyPressDOWN) {
+        if (getSelectedOption().equals(choiceCharacterLabel)) {
             dispose();
             gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
         } else if (getSelectedOption().equals(exitLabel)) {
@@ -147,17 +151,6 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         }
 
         return true;
-    }
-
-    // Desenhar a borda ao redor da opção selecionada
-    private void drawSelectionBorder(Actor selectedActor) {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.RED);
-
-        shapeRenderer.rect(selectedActor.getX() - 10, selectedActor.getY() - 10,
-                selectedActor.getWidth() + 20, selectedActor.getHeight() + 20);
-
-        shapeRenderer.end();
     }
 
     private Actor getNextLabelActor(int currentIndex, boolean upDirection) {
@@ -185,12 +178,12 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         this.stage = stage;
     }
 
-    public Label getStartGameLabel() {
-        return startGameLabel;
+    public Label getChoiceCharacterLabel() {
+        return choiceCharacterLabel;
     }
 
-    public void setStartGameLabel(Label startGameLabel) {
-        this.startGameLabel = startGameLabel;
+    public void setChoiceCharacterLabel(Label choiceCharacterLabel) {
+        this.choiceCharacterLabel = choiceCharacterLabel;
     }
 
     public Label getExitLabel() {

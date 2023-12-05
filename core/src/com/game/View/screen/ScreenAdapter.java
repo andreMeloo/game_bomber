@@ -9,11 +9,11 @@ public abstract class ScreenAdapter {
 
 
     public abstract ControlAdapter getControler();
-    public abstract boolean pressUp();
-    public abstract boolean pressDown();
-    public abstract boolean pressLeft();
-    public abstract boolean pressRight();
-    public abstract boolean pressActionA();
-    public abstract boolean pressActionY();
-    public abstract boolean pressStart();
+    public abstract boolean pressUp(boolean isTypeKeyPressDOWN);
+    public abstract boolean pressDown(boolean isTypeKeyPressDOWN);
+    public abstract boolean pressLeft(boolean isTypeKeyPressDOWN);
+    public abstract boolean pressRight(boolean isTypeKeyPressDOWN);
+    public abstract boolean pressActionA(boolean isTypeKeyPressDOWN);
+    public abstract boolean pressActionY(boolean isTypeKeyPressDOWN);
+    public abstract boolean pressStart(boolean isTypeKeyPressDOWN);
 }
