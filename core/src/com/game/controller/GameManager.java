@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.game.View.screen.ChoiceCharacterScreen;
 import com.game.View.screen.MenuScreen;
 
 
@@ -16,6 +17,7 @@ public class GameManager extends Game {
 
     @Override
     public void create() {
+//        Gdx.graphics.setUndecorated(true);
         batch = new SpriteBatch();
         this.setScreen(new MenuScreen(this));
     }

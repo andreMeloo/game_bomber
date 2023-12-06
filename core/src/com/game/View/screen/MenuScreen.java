@@ -11,6 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.controller.GameManager;
@@ -27,10 +29,12 @@ public class MenuScreen extends ScreenAdapter implements Screen {
     private BitmapFont font;
     private Actor selectedOption; // Índice da opção selecionada
     private ShapeRenderer shapeRenderer;
+    private Viewport viewport;
 
     public MenuScreen(final GameManager gameManager) {
         this.gameManager = gameManager;
-        stage = new Stage();
+        viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        stage = new Stage(viewport);
         this.gameManager.setInputManager(new InputManager(getControler(), this));
         this.gameManager.setInput();
     }
@@ -44,8 +48,8 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         choiceCharacterLabel = new Label("Adventure Mode", labelStyle);
         exitLabel = new Label("Sair", labelStyle);
 
-        float stageCenterX = stage.getWidth() / 2f;
-        float stageCenterY = stage.getHeight() / 2f;
+        float stageCenterX = stage.getViewport().getWorldWidth() / 2f;
+        float stageCenterY = stage.getViewport().getWorldHeight() / 2f;
 
         choiceCharacterLabel.setPosition(stageCenterX - choiceCharacterLabel.getWidth() / 2, stageCenterY);
         exitLabel.setPosition(stageCenterX - exitLabel.getWidth() / 2, stageCenterY - 50f); // Ajuste a posição vertical como desejado
@@ -57,6 +61,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void render(float delta) {
+        ScreenUtils.clear(Color.DARK_GRAY);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act();
         stage.draw();
@@ -65,7 +70,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height, true);
     }
 
     @Override
@@ -86,6 +91,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        shapeRenderer.dispose();
         font.dispose();
     }
 
