@@ -2,19 +2,21 @@ package com.game.View.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.ControlAdapter;
 import com.game.model.controls.MenuControl;
 import com.game.util.UniversalUtil;
-
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,16 +28,21 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     Map<Image, Pair<Integer, Integer>> imagePositions;
     private Actor selectedCharacter;
     private ShapeRenderer shapeRenderer;
+    private Viewport viewport;
 
     /**
      * Statics Values
      */
     private static final String CHARACTER = "select-cowboy.png";
+    private static final Float SPACE_BETWEEN_CHARACTERS = 20f;
+    private static final int COLUMNS_CHARACTERS = 5;
+    private static final int ROWS_CHARACTERS = 3;
 
 
     public ChoiceCharacterScreen(final GameManager gameManager) {
         this.gameManager = gameManager;
-        stage = new Stage();
+        viewport =  new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        stage = new Stage(viewport);
         this.gameManager.setInputManager(new InputManager(getControler(), this));
         this.gameManager.setInput();
     }
@@ -45,21 +52,20 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         shapeRenderer = new ShapeRenderer();
         imagePositions = new LinkedHashMap<>();
         textureSelectCaracter = new Texture(Gdx.files.internal(CHARACTER));
-        float stageCenterX = stage.getWidth() / 2f;
-        float stageCenterY = stage.getHeight() / 2f;
-        float linha = 1f;
-        float coluna = 1f;
+        createCharactersSelection();
+    }
 
-
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 2; j++) {
+    private void createCharactersSelection() {
+        for (int i = 0; i < ROWS_CHARACTERS; i++) {
+            for (int j = 0; j < COLUMNS_CHARACTERS; j++) {
                 Image image = new Image(textureSelectCaracter);
-                image.setPosition(stageCenterX + coluna * ( - image.getWidth() - 15f), stageCenterY + (linha > 0 ? 0 : - image.getWidth() - 60f));
+                image.setPosition(
+                        (getWidthCenterStage() - ((image.getWidth() * COLUMNS_CHARACTERS) + ((SPACE_BETWEEN_CHARACTERS * 5) * (COLUMNS_CHARACTERS - 1))) / 2f) + ((image.getWidth() + (SPACE_BETWEEN_CHARACTERS * 5)) * j),
+                        (getHeightCenterStage() + ((image.getHeight() * ROWS_CHARACTERS) + ((SPACE_BETWEEN_CHARACTERS * 2) * (ROWS_CHARACTERS - 1))) / 2f) - ((image.getHeight() + (SPACE_BETWEEN_CHARACTERS * 2)) * i)
+                );
                 imagePositions.put(image, new Pair<>(i,j));
                 stage.addActor(image);
-                coluna = coluna * (-1f);
             }
-            linha = linha * (-1f);
         }
 
         selectedCharacter = imagePositions.keySet().iterator().next();
@@ -67,6 +73,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void render(float delta) {
+        ScreenUtils.clear(Color.DARK_GRAY);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act();
         stage.draw();
@@ -75,7 +82,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height);
     }
 
     @Override
@@ -96,6 +103,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        shapeRenderer.dispose();
         textureSelectCaracter.dispose();
     }
 
@@ -110,7 +118,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         int currentRow = position.getFirst();
         int currentColumn = position.getSecond();
 
-        int newRow = (currentRow - 1 + 2) % 2; // totalRows é o número total de linhas na matriz
+        int newRow = (currentRow - 1 + ROWS_CHARACTERS) % ROWS_CHARACTERS; // totalRows é o número total de linhas na matriz
         Pair<Integer, Integer> newSelectedPosition = new Pair<>(newRow, currentColumn);
 
         // Encontrar o novo elemento selecionado com base na nova posição na matriz
@@ -130,7 +138,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         int currentRow = position.getFirst();
         int currentColumn = position.getSecond();
 
-        int newRow = (currentRow + 1 + 2) % 2; // totalRows é o número total de linhas na matriz
+        int newRow = (currentRow + 1 + ROWS_CHARACTERS) % ROWS_CHARACTERS; // totalRows é o número total de linhas na matriz
         Pair<Integer, Integer> newSelectedPosition = new Pair<>(newRow, currentColumn);
 
         // Encontrar o novo elemento selecionado com base na nova posição na matriz
@@ -150,7 +158,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         int currentRow = position.getFirst();
         int currentColumn = position.getSecond();
 
-        int newColumn = (currentColumn - 1 + 2) % 2; // totalRows é o número total de linhas na matriz
+        int newColumn = (currentColumn - 1 + COLUMNS_CHARACTERS) % COLUMNS_CHARACTERS; // totalRows é o número total de linhas na matriz
         Pair<Integer, Integer> newSelectedPosition = new Pair<>(currentRow, newColumn);
 
         // Encontrar o novo elemento selecionado com base na nova posição na matriz
@@ -170,7 +178,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         int currentRow = position.getFirst();
         int currentColumn = position.getSecond();
 
-        int newColumn = (currentColumn + 1 + 2) % 2; // totalRows é o número total de linhas na matriz
+        int newColumn = (currentColumn + 1 + 5) % 5; // totalRows é o número total de linhas na matriz
         Pair<Integer, Integer> newSelectedPosition = new Pair<>(currentRow, newColumn);
 
         // Encontrar o novo elemento selecionado com base na nova posição na matriz
@@ -186,7 +194,9 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
     @Override
     public boolean pressActionA(boolean isTypeKeyPressDOWN) {
-        return false;
+        dispose();
+        gameManager.setScreen(new MoveCharacterScreen(gameManager));
+        return true;
     }
 
     @Override
@@ -198,7 +208,17 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
     @Override
     public boolean pressStart(boolean isTypeKeyPressDOWN) {
-        return false;
+        dispose();
+        gameManager.setScreen(new MoveCharacterScreen(gameManager));
+        return true;
+    }
+
+    private float getWidthCenterStage() {
+        return stage.getWidth() / 2f;
+    }
+
+    private float getHeightCenterStage() {
+        return stage.getHeight() / 2f;
     }
 
     private class Pair<T, U> {
