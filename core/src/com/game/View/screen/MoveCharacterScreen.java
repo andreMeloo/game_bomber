@@ -3,14 +3,17 @@ package com.game.View.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.ControlAdapter;
-import com.game.model.controls.MoveCharacterControl;
+import com.game.model.controls.GameControl;
 
 public class MoveCharacterScreen extends ScreenAdapter implements Screen {
     final GameManager gameManager;
@@ -27,6 +30,10 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
     private Texture animationSheet;
     private TextureRegion[][] frames;
     private Array<TextureRegion> animationFrames;
+    private Rectangle rectanglePlayer;
+    private Rectangle rectangleView;
+    private ShapeRenderer shapePlayer;
+    private ShapeRenderer shapeView;
 
 
     /**
@@ -43,8 +50,9 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
 
     public MoveCharacterScreen(final GameManager gameManager) {
         this.gameManager = gameManager;
-        this.gameManager.setInputManager(new InputManager(getControler(), this));
+        this.gameManager.setInputManager(new InputManager(new GameControl(), this));
         this.gameManager.setInput();
+        rectangleView = new Rectangle(10,10, Gdx.graphics.getWidth() - 20, Gdx.graphics.getHeight() - 20);
     }
 
     @Override
@@ -56,14 +64,40 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
         modifPositionY = 0;
         row = 1;
         coluns = 1;
+        shapePlayer = new ShapeRenderer();
+        shapeView = new ShapeRenderer();
+        shapeView.setColor(Color.RED);
+        shapePlayer.setColor(Color.RED);
+        rectanglePlayer = new Rectangle();
         loadAnimationSheet();
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(Color.DARK_GRAY);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        treatPlayerCollision();
+
         loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
-        renderAnimationFrames(animationFrames.size, Gdx.graphics.getDeltaTime(), true);
+        renderAnimationFrames(animationFrames.size, delta);
+        shapeView.begin(ShapeRenderer.ShapeType.Line);
+        shapeView.rect(rectangleView.x, rectangleView.y, rectangleView.width, rectangleView.height);
+        shapeView.end();
+    }
+
+    private void treatPlayerCollision() {
+        if (!rectangleView.contains(rectanglePlayer)) {
+            if (rectanglePlayer.y < rectangleView.y && modifPositionY < 0) {
+                modifPositionY = 0;
+            } else if (rectanglePlayer.y + rectanglePlayer.height > rectangleView.y + rectangleView.height && modifPositionY > 0) {
+                modifPositionY = 0;
+            } else if (rectanglePlayer.x < rectangleView.x && modifPositionX < 0) {
+                modifPositionX = 0;
+            } else if (rectanglePlayer.x + rectanglePlayer.width > rectangleView.x + rectangleView.width && modifPositionX > 0) {
+                modifPositionX = 0;
+            }
+        }
     }
 
     @Override
@@ -89,59 +123,99 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
     @Override
     public void dispose() {
         animationSheet.dispose();
+        shapeView.dispose();
+        shapePlayer.dispose();
     }
 
     @Override
-    public ControlAdapter getControler() {
-        return new MoveCharacterControl();
+    public void pressUp(boolean isTypeKeyPressDOWN) {
+        if (!isTypeKeyPressDOWN) {
+            row = 4;
+            coluns = 1;
+            modifPositionX = 0;
+            modifPositionY = 0;
+        } else {
+            row = 4;
+            coluns = 4;
+            modifPositionX = 0;
+            modifPositionY = 2f;
+        }
     }
 
     @Override
-    public boolean pressUp(boolean isTypeKeyPressDOWN) {
-        return false;
+    public void pressDown(boolean isTypeKeyPressDOWN) {
+        if (!isTypeKeyPressDOWN) {
+            row = 1;
+            coluns = 1;
+            modifPositionX = 0;
+            modifPositionY = 0;
+        } else {
+            row = 1;
+            coluns = 4;
+            modifPositionX = 0;
+            modifPositionY = -2f;
+        }
     }
 
     @Override
-    public boolean pressDown(boolean isTypeKeyPressDOWN) {
-        return false;
+    public void pressLeft(boolean isTypeKeyPressDOWN) {
+        if (!isTypeKeyPressDOWN) {
+            row = 2;
+            coluns = 1;
+            modifPositionX = 0;
+            modifPositionY = 0;
+        } else {
+            row = 2;
+            coluns = 4;
+            modifPositionX = -2f;
+            modifPositionY = 0;
+        }
     }
 
     @Override
-    public boolean pressLeft(boolean isTypeKeyPressDOWN) {
-        return false;
+    public void pressRight(boolean isTypeKeyPressDOWN) {
+        if (!isTypeKeyPressDOWN) {
+            row = 3;
+            coluns = 1;
+            modifPositionX = 0;
+            modifPositionY = 0;
+        } else {
+            row = 3;
+            coluns = 4;
+            modifPositionX = 2f;
+            modifPositionY = 0;
+        }
     }
 
     @Override
-    public boolean pressRight(boolean isTypeKeyPressDOWN) {
-        return false;
+    public void pressActionA(boolean isTypeKeyPressDOWN) {
     }
 
     @Override
-    public boolean pressActionA(boolean isTypeKeyPressDOWN) {
-        return false;
+    public void pressActionY(boolean isTypeKeyPressDOWN) {
     }
 
     @Override
-    public boolean pressActionY(boolean isTypeKeyPressDOWN) {
-        return false;
-    }
-
-    @Override
-    public boolean pressStart(boolean isTypeKeyPressDOWN) {
-        dispose();
-        gameManager.setScreen(new MenuScreen(gameManager));
-        return true;
+    public void pressStart(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            dispose();
+            gameManager.setScreen(new MenuScreen(gameManager));
+        }
     }
 
 
-    private void renderAnimationFrames(int totalFrames, float incrementStateTime, boolean restartAnimation) {
+    private void renderAnimationFrames(int totalFrames, float incrementStateTime) {
         stateTime += incrementStateTime;
         int nextFrame = (int) (stateTime / FRAME_DURATION) % totalFrames;
         TextureRegion currentFrame = animationFrames.get(nextFrame);
-
+        rectanglePlayer.setPosition(positionX, positionY);
+        rectanglePlayer.setSize(currentFrame.getRegionWidth() - 2f, currentFrame.getRegionHeight());
         gameManager.batch.begin();
         gameManager.batch.draw(currentFrame, positionX, positionY);
         gameManager.batch.end();
+        shapePlayer.begin(ShapeRenderer.ShapeType.Line);
+        shapePlayer.rect(rectanglePlayer.x, rectanglePlayer.y, rectanglePlayer.width, rectanglePlayer.height);
+        shapePlayer.end();
     }
 
     private void loadAnimationFrame(int row, int coluns, float modifPositionX, float modifPositionY) {

@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.View.screen.ChoiceCharacterScreen;
 import com.game.View.screen.MenuScreen;
+import com.game.model.controls.GameControl;
 
 
 public class GameManager extends Game {

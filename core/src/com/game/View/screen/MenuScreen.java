@@ -13,12 +13,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.ControlAdapter;
-import com.game.model.controls.MenuControl;
+import com.game.model.controls.GameControl;
 import com.game.util.UniversalUtil;
 
 public class MenuScreen extends ScreenAdapter implements Screen {
@@ -35,7 +34,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         this.gameManager = gameManager;
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage = new Stage(viewport);
-        this.gameManager.setInputManager(new InputManager(getControler(), this));
+        this.gameManager.setInputManager(new InputManager(new GameControl(), this));
         this.gameManager.setInput();
     }
 
@@ -96,67 +95,56 @@ public class MenuScreen extends ScreenAdapter implements Screen {
     }
 
     @Override
-    public ControlAdapter getControler() {
-        return new MenuControl();
+    public void pressUp(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN)
+            selectedOption = getNextLabelActor(stage.getActors().indexOf(selectedOption, false), true);
     }
 
     @Override
-    public boolean pressUp(boolean isTypeKeyPressDOWN) {
-        selectedOption = getNextLabelActor(stage.getActors().indexOf(selectedOption, false), true);
-
-        return true;
+    public void pressDown(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN)
+            selectedOption = getNextLabelActor(stage.getActors().indexOf(selectedOption, false), false);
     }
 
     @Override
-    public boolean pressDown(boolean isTypeKeyPressDOWN) {
-        selectedOption = getNextLabelActor(stage.getActors().indexOf(selectedOption, false), false);
-
-        return true;
+    public void pressLeft(boolean isTypeKeyPressDOWN) {
     }
 
     @Override
-    public boolean pressLeft(boolean isTypeKeyPressDOWN) {
-        return false;
+    public void pressRight(boolean isTypeKeyPressDOWN) {
     }
 
     @Override
-    public boolean pressRight(boolean isTypeKeyPressDOWN) {
-        return false;
-    }
-
-    @Override
-    public boolean pressActionA(boolean isTypeKeyPressDOWN) {
-        if (getSelectedOption().equals(choiceCharacterLabel)) {
-            dispose();
-            gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
-        } else if (getSelectedOption().equals(exitLabel)) {
-            Gdx.app.exit();
+    public void pressActionA(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            if (getSelectedOption().equals(choiceCharacterLabel)) {
+                dispose();
+                gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
+            } else if (getSelectedOption().equals(exitLabel)) {
+                Gdx.app.exit();
+            }
         }
-
-        return true;
     }
 
     @Override
-    public boolean pressActionY(boolean isTypeKeyPressDOWN) {
-        if (getSelectedOption().equals(choiceCharacterLabel)) {
-            selectedOption = stage.getActors().get(stage.getActors().indexOf(exitLabel, false));
-        } else {
-            return false;
+    public void pressActionY(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            if (getSelectedOption().equals(choiceCharacterLabel)) {
+                selectedOption = stage.getActors().get(stage.getActors().indexOf(exitLabel, false));
+            }
         }
-
-        return true;
     }
 
     @Override
-    public boolean pressStart(boolean isTypeKeyPressDOWN) {
-        if (getSelectedOption().equals(choiceCharacterLabel)) {
-            dispose();
-            gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
-        } else if (getSelectedOption().equals(exitLabel)) {
-            Gdx.app.exit();
+    public void pressStart(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            if (getSelectedOption().equals(choiceCharacterLabel)) {
+                dispose();
+                gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
+            } else if (getSelectedOption().equals(exitLabel)) {
+                Gdx.app.exit();
+            }
         }
-
-        return true;
     }
 
     private Actor getNextLabelActor(int currentIndex, boolean upDirection) {

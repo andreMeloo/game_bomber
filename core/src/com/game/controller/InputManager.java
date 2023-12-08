@@ -9,9 +9,9 @@ public class InputManager implements InputProcessor {
     private ControlAdapter controler;
     private ScreenAdapter currentScreen;
 
-    public InputManager(ControlAdapter controler, ScreenAdapter currentState) {
+    public InputManager(ControlAdapter controler, ScreenAdapter currentScreen) {
         this.controler = controler;
-        this.currentScreen = currentState;
+        this.currentScreen = currentScreen;
     }
 
     @Override

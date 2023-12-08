@@ -15,7 +15,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.ControlAdapter;
-import com.game.model.controls.MenuControl;
+import com.game.model.controls.GameControl;
 import com.game.util.UniversalUtil;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         this.gameManager = gameManager;
         viewport =  new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage = new Stage(viewport);
-        this.gameManager.setInputManager(new InputManager(getControler(), this));
+        this.gameManager.setInputManager(new InputManager(new GameControl(), this));
         this.gameManager.setInput();
     }
 
@@ -108,109 +108,107 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     }
 
     @Override
-    public ControlAdapter getControler() {
-        return new MenuControl();
-    }
+    public void pressUp(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            Pair<Integer, Integer> position = imagePositions.get(selectedCharacter);
+            int currentRow = position.getFirst();
+            int currentColumn = position.getSecond();
 
-    @Override
-    public boolean pressUp(boolean isTypeKeyPressDOWN) {
-        Pair<Integer, Integer> position = imagePositions.get(selectedCharacter);
-        int currentRow = position.getFirst();
-        int currentColumn = position.getSecond();
+            int newRow = (currentRow - 1 + ROWS_CHARACTERS) % ROWS_CHARACTERS; // totalRows é o número total de linhas na matriz
+            Pair<Integer, Integer> newSelectedPosition = new Pair<>(newRow, currentColumn);
 
-        int newRow = (currentRow - 1 + ROWS_CHARACTERS) % ROWS_CHARACTERS; // totalRows é o número total de linhas na matriz
-        Pair<Integer, Integer> newSelectedPosition = new Pair<>(newRow, currentColumn);
-
-        // Encontrar o novo elemento selecionado com base na nova posição na matriz
-        for (Map.Entry<Image, Pair<Integer, Integer>> entry : imagePositions.entrySet()) {
-            if (entry.getValue().equals(newSelectedPosition)) {
-                selectedCharacter = entry.getKey(); // Atualiza o elemento selecionado
-                break;
+            // Encontrar o novo elemento selecionado com base na nova posição na matriz
+            for (Map.Entry<Image, Pair<Integer, Integer>> entry : imagePositions.entrySet()) {
+                if (entry.getValue().equals(newSelectedPosition)) {
+                    selectedCharacter = entry.getKey(); // Atualiza o elemento selecionado
+                    break;
+                }
             }
         }
-
-        return true;
     }
 
     @Override
-    public boolean pressDown(boolean isTypeKeyPressDOWN) {
-        Pair<Integer, Integer> position = imagePositions.get(selectedCharacter);
-        int currentRow = position.getFirst();
-        int currentColumn = position.getSecond();
+    public void pressDown(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            Pair<Integer, Integer> position = imagePositions.get(selectedCharacter);
+            int currentRow = position.getFirst();
+            int currentColumn = position.getSecond();
 
-        int newRow = (currentRow + 1 + ROWS_CHARACTERS) % ROWS_CHARACTERS; // totalRows é o número total de linhas na matriz
-        Pair<Integer, Integer> newSelectedPosition = new Pair<>(newRow, currentColumn);
+            int newRow = (currentRow + 1 + ROWS_CHARACTERS) % ROWS_CHARACTERS; // totalRows é o número total de linhas na matriz
+            Pair<Integer, Integer> newSelectedPosition = new Pair<>(newRow, currentColumn);
 
-        // Encontrar o novo elemento selecionado com base na nova posição na matriz
-        for (Map.Entry<Image, Pair<Integer, Integer>> entry : imagePositions.entrySet()) {
-            if (entry.getValue().equals(newSelectedPosition)) {
-                selectedCharacter = entry.getKey(); // Atualiza o elemento selecionado
-                break;
+            // Encontrar o novo elemento selecionado com base na nova posição na matriz
+            for (Map.Entry<Image, Pair<Integer, Integer>> entry : imagePositions.entrySet()) {
+                if (entry.getValue().equals(newSelectedPosition)) {
+                    selectedCharacter = entry.getKey(); // Atualiza o elemento selecionado
+                    break;
+                }
             }
         }
-
-        return true;
     }
 
     @Override
-    public boolean pressLeft(boolean isTypeKeyPressDOWN) {
-        Pair<Integer, Integer> position = imagePositions.get(selectedCharacter);
-        int currentRow = position.getFirst();
-        int currentColumn = position.getSecond();
+    public void pressLeft(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            Pair<Integer, Integer> position = imagePositions.get(selectedCharacter);
+            int currentRow = position.getFirst();
+            int currentColumn = position.getSecond();
 
-        int newColumn = (currentColumn - 1 + COLUMNS_CHARACTERS) % COLUMNS_CHARACTERS; // totalRows é o número total de linhas na matriz
-        Pair<Integer, Integer> newSelectedPosition = new Pair<>(currentRow, newColumn);
+            int newColumn = (currentColumn - 1 + COLUMNS_CHARACTERS) % COLUMNS_CHARACTERS; // totalRows é o número total de linhas na matriz
+            Pair<Integer, Integer> newSelectedPosition = new Pair<>(currentRow, newColumn);
 
-        // Encontrar o novo elemento selecionado com base na nova posição na matriz
-        for (Map.Entry<Image, Pair<Integer, Integer>> entry : imagePositions.entrySet()) {
-            if (entry.getValue().equals(newSelectedPosition)) {
-                selectedCharacter = entry.getKey(); // Atualiza o elemento selecionado
-                break;
+            // Encontrar o novo elemento selecionado com base na nova posição na matriz
+            for (Map.Entry<Image, Pair<Integer, Integer>> entry : imagePositions.entrySet()) {
+                if (entry.getValue().equals(newSelectedPosition)) {
+                    selectedCharacter = entry.getKey(); // Atualiza o elemento selecionado
+                    break;
+                }
             }
         }
-
-        return true;
     }
 
     @Override
-    public boolean pressRight(boolean isTypeKeyPressDOWN) {
-        Pair<Integer, Integer> position = imagePositions.get(selectedCharacter);
-        int currentRow = position.getFirst();
-        int currentColumn = position.getSecond();
+    public void pressRight(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            Pair<Integer, Integer> position = imagePositions.get(selectedCharacter);
+            int currentRow = position.getFirst();
+            int currentColumn = position.getSecond();
 
-        int newColumn = (currentColumn + 1 + 5) % 5; // totalRows é o número total de linhas na matriz
-        Pair<Integer, Integer> newSelectedPosition = new Pair<>(currentRow, newColumn);
+            int newColumn = (currentColumn + 1 + 5) % 5; // totalRows é o número total de linhas na matriz
+            Pair<Integer, Integer> newSelectedPosition = new Pair<>(currentRow, newColumn);
 
-        // Encontrar o novo elemento selecionado com base na nova posição na matriz
-        for (Map.Entry<Image, Pair<Integer, Integer>> entry : imagePositions.entrySet()) {
-            if (entry.getValue().equals(newSelectedPosition)) {
-                selectedCharacter = entry.getKey(); // Atualiza o elemento selecionado
-                break;
+            // Encontrar o novo elemento selecionado com base na nova posição na matriz
+            for (Map.Entry<Image, Pair<Integer, Integer>> entry : imagePositions.entrySet()) {
+                if (entry.getValue().equals(newSelectedPosition)) {
+                    selectedCharacter = entry.getKey(); // Atualiza o elemento selecionado
+                    break;
+                }
             }
         }
-
-        return true;
     }
 
     @Override
-    public boolean pressActionA(boolean isTypeKeyPressDOWN) {
-        dispose();
-        gameManager.setScreen(new MoveCharacterScreen(gameManager));
-        return true;
+    public void pressActionA(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            dispose();
+            gameManager.setScreen(new MoveCharacterScreen(gameManager));
+        }
     }
 
     @Override
-    public boolean pressActionY(boolean isTypeKeyPressDOWN) {
-        dispose();
-        gameManager.setScreen(new MenuScreen(gameManager));
-        return true;
+    public void pressActionY(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            dispose();
+            gameManager.setScreen(new MenuScreen(gameManager));
+        }
     }
 
     @Override
-    public boolean pressStart(boolean isTypeKeyPressDOWN) {
-        dispose();
-        gameManager.setScreen(new MoveCharacterScreen(gameManager));
-        return true;
+    public void pressStart(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            dispose();
+            gameManager.setScreen(new MoveCharacterScreen(gameManager));
+        }
     }
 
     private float getWidthCenterStage() {

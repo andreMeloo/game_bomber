@@ -10,7 +10,8 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		DisplayMode primaryMode = Lwjgl3ApplicationConfiguration.getDisplayMode();
-		config.setFullscreenMode(primaryMode);
+//		config.setFullscreenMode(primaryMode);
+		config.setWindowedMode(800,800);
 		config.useVsync(true);
 		config.setForegroundFPS(60);
 		config.setTitle("Bomber");
