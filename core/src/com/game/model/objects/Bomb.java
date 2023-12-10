@@ -1,6 +1,7 @@
 package com.game.model.objects;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -10,9 +11,9 @@ public class Bomb extends GameObject {
 
     private static final String BOMBER_SPRITE = "bomber.png";
     private static final int TILESET_WIDTH = 4;
-    private static final int TILESET_HEIGHT = 5;
+    private static final int TILESET_HEIGHT = 3;
 
-    public Bomb(Vector2 position, ScreenAdapter screen) {
+    public Bomb(Vector2 position, Screen screen) {
         super(position, screen);
         setAnimationSheet(new Texture(Gdx.files.internal(BOMBER_SPRITE)));
         loadAnimationSheet();

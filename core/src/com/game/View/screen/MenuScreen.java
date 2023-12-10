@@ -20,9 +20,6 @@ import com.game.model.controls.GameControl;
 import com.game.util.UniversalUtil;
 
 public class MenuScreen extends ScreenAdapter implements Screen {
-    final GameManager gameManager;
-    private InputManager inputManager;
-
 
     private Stage stage;
     private Label choiceCharacterLabel;
@@ -33,11 +30,11 @@ public class MenuScreen extends ScreenAdapter implements Screen {
     private Viewport viewport;
 
     public MenuScreen(final GameManager gameManager) {
-        this.gameManager = gameManager;
+        super(gameManager);
+        setInputManager(new InputManager(new GameControl(), this));
+        getGameManager().addInput(getInputManager());
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage = new Stage(viewport);
-        this.inputManager = new InputManager(new GameControl(), this);
-        this.gameManager.addInput(inputManager);
     }
 
     @Override
@@ -121,8 +118,8 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         if (isTypeKeyPressDOWN) {
             if (getSelectedOption().equals(choiceCharacterLabel)) {
                 dispose();
-                gameManager.removeInput(inputManager);
-                gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
+                getGameManager().removeInput(getInputManager());
+                getGameManager().setScreen(new ChoiceCharacterScreen(getGameManager()));
             } else if (getSelectedOption().equals(exitLabel)) {
                 Gdx.app.exit();
             }
@@ -143,8 +140,8 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         if (isTypeKeyPressDOWN) {
             if (getSelectedOption().equals(choiceCharacterLabel)) {
                 dispose();
-                gameManager.removeInput(inputManager);
-                gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
+                getGameManager().removeInput(getInputManager());
+                getGameManager().setScreen(new ChoiceCharacterScreen(getGameManager()));
             } else if (getSelectedOption().equals(exitLabel)) {
                 Gdx.app.exit();
             }

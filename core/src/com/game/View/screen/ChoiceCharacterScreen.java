@@ -21,9 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
-    final GameManager gameManager;
-    private InputManager inputManager;
-
     private Stage stage;
     private Texture textureSelectCaracter;
     Map<Image, Pair<Integer, Integer>> imagePositions;
@@ -41,11 +38,11 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
 
 
     public ChoiceCharacterScreen(final GameManager gameManager) {
-        this.gameManager = gameManager;
+        super(gameManager);
+        setInputManager(new InputManager(new GameControl(), this));
+        getGameManager().addInput(getInputManager());
         viewport =  new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage = new Stage(viewport);
-        this.inputManager = new InputManager(new GameControl(), this);
-        this.gameManager.addInput(inputManager);
     }
 
     @Override
@@ -194,8 +191,8 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     public void pressActionA(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
             dispose();
-            gameManager.removeInput(inputManager);
-            gameManager.setScreen(new PlayGameScreen(gameManager));
+            getGameManager().removeInput(getInputManager());
+            getGameManager().setScreen(new PlayGameScreen(getGameManager()));
         }
     }
 
@@ -203,8 +200,8 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     public void pressActionY(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
             dispose();
-            gameManager.removeInput(inputManager);
-            gameManager.setScreen(new MenuScreen(gameManager));
+            getGameManager().removeInput(getInputManager());
+            getGameManager().setScreen(new MenuScreen(getGameManager()));
         }
     }
 
@@ -212,8 +209,8 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     public void pressStart(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
             dispose();
-            gameManager.removeInput(inputManager);
-            gameManager.setScreen(new PlayGameScreen(gameManager));
+            getGameManager().removeInput(getInputManager());
+            getGameManager().setScreen(new PlayGameScreen(getGameManager()));
         }
     }
 

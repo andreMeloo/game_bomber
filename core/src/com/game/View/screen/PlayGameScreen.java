@@ -6,23 +6,26 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.GameControl;
+import com.game.model.objects.Bomb;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayGameScreen extends ScreenAdapter implements Screen {
-    final GameManager gameManager;
-    private InputManager inputManager;
-
-
     /**
      * Statics Values
      */
     private static final String PLAYER = "cowboy.png";
-    private static final float FRAME_DURATION = .25f; // Defina a duração de cada frame da animação
+    private static final float FRAME_DURATION_PLAYER = .25f; // Defina a duração de cada frame da animação
+    private static final float FRAME_DURATION_BOMB = .7f; // Defina a duração de cada frame da animação
     private static final int TILESET_WIDTH = 4;
     private static final int TILESET_HEIGHT = 4;
 
@@ -32,6 +35,11 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     private Array<TextureRegion> animationFrames;
     private Rectangle rectanglePlayer;
     private Rectangle rectangleView;
+
+    /**
+     * Objects
+     */
+    private List<Bomb> activeBombsList;
 
 
     /**
@@ -45,12 +53,15 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     private float modifPositionX;
     private float modifPositionY;
 
+    private ShapeRenderer shapeView;
+    private ShapeRenderer shapePlayer;
+
 
     public PlayGameScreen(final GameManager gameManager) {
-        this.gameManager = gameManager;
-        inputManager = new InputManager(new GameControl(), this);
-        this.gameManager.addInput(inputManager);
-        rectangleView = new Rectangle(10,10, Gdx.graphics.getWidth() - 20, Gdx.graphics.getHeight() - 20);
+        super(gameManager);
+        setInputManager(new InputManager(new GameControl(), this));
+        getGameManager().addInput(getInputManager());
+        rectangleView = new Rectangle(150,50, Gdx.graphics.getWidth() - 300, Gdx.graphics.getHeight() - 100);
     }
 
     @Override
@@ -63,6 +74,9 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         row = 1;
         coluns = 1;
         rectanglePlayer = new Rectangle();
+        shapeView = new ShapeRenderer();
+        shapePlayer = new ShapeRenderer();
+        activeBombsList = new ArrayList<>();
         loadAnimationSheet();
     }
 
@@ -74,7 +88,14 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         treatPlayerCollision();
 
         loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
+
+        renderObjectsFrames(stateTime);
         renderAnimationFrames(animationFrames.size, delta);
+
+        shapeView.begin(ShapeRenderer.ShapeType.Line);
+        shapeView.setColor(Color.RED);
+        shapeView.rect(rectangleView.x, rectangleView.y, rectangleView.width, rectangleView.height);
+        shapeView.end();
     }
 
     private void treatPlayerCollision() {
@@ -114,6 +135,8 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     @Override
     public void dispose() {
         animationSheet.dispose();
+        shapePlayer.dispose();
+        shapeView.dispose();
     }
 
     @Override
@@ -178,6 +201,10 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void pressActionA(boolean isTypeKeyPressDOWN) {
+        if (isTypeKeyPressDOWN) {
+            Bomb bomb = new Bomb(new Vector2(positionX, positionY), this);
+            activeBombsList.add(bomb);
+        }
     }
 
     @Override
@@ -188,21 +215,42 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     public void pressStart(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
             dispose();
-            gameManager.removeInput(inputManager);
-            gameManager.setScreen(new MenuScreen(gameManager));
+            getGameManager().removeInput(getInputManager());
+            getGameManager().setScreen(new MenuScreen(getGameManager()));
         }
     }
 
 
     private void renderAnimationFrames(int totalFrames, float incrementStateTime) {
         stateTime += incrementStateTime;
-        int nextFrame = (int) (stateTime / FRAME_DURATION) % totalFrames;
+        int nextFrame = (int) (stateTime / FRAME_DURATION_PLAYER) % totalFrames;
         TextureRegion currentFrame = animationFrames.get(nextFrame);
         rectanglePlayer.setPosition(positionX, positionY);
-        rectanglePlayer.setSize(currentFrame.getRegionWidth() - 2f, currentFrame.getRegionHeight());
-        gameManager.batch.begin();
-        gameManager.batch.draw(currentFrame, positionX, positionY);
-        gameManager.batch.end();
+        rectanglePlayer.setSize(currentFrame.getRegionWidth() - 2f, currentFrame.getRegionHeight() - (30f/100 * currentFrame.getRegionHeight()));
+        shapePlayer.begin(ShapeRenderer.ShapeType.Line);
+        shapePlayer.setColor(Color.RED);
+        shapePlayer.rect(rectanglePlayer.x, rectanglePlayer.y, rectanglePlayer.width, rectanglePlayer.height);
+        shapePlayer.end();
+        getGameManager().batch.begin();
+        getGameManager().batch.draw(currentFrame, positionX, positionY);
+        getGameManager().batch.end();
+    }
+
+    private void renderObjectsFrames(float stateTime) {
+        int timeFrame = (int) (stateTime / FRAME_DURATION_BOMB);
+        int nextFrame = 0;
+        TextureRegion currentFrame = new TextureRegion();
+
+        if (activeBombsList.size() > 0) {
+            getGameManager().batch.begin();
+            for (Bomb bomb : activeBombsList) {
+                bomb.update(stateTime);
+                nextFrame = timeFrame % bomb.getAnimationFrames().size;
+                currentFrame = bomb.getAnimationFrames().get(nextFrame);
+                getGameManager().batch.draw(currentFrame, bomb.getPosition().x, bomb.getPosition().y);
+            }
+            getGameManager().batch.end();
+        }
     }
 
     private void loadAnimationFrame(int row, int coluns, float modifPositionX, float modifPositionY) {
