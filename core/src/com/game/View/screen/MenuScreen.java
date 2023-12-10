@@ -16,12 +16,14 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
-import com.game.model.controls.ControlAdapter;
 import com.game.model.controls.GameControl;
 import com.game.util.UniversalUtil;
 
 public class MenuScreen extends ScreenAdapter implements Screen {
     final GameManager gameManager;
+    private InputManager inputManager;
+
+
     private Stage stage;
     private Label choiceCharacterLabel;
     private Label exitLabel;
@@ -34,8 +36,8 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         this.gameManager = gameManager;
         viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage = new Stage(viewport);
-        this.gameManager.setInputManager(new InputManager(new GameControl(), this));
-        this.gameManager.setInput();
+        this.inputManager = new InputManager(new GameControl(), this);
+        this.gameManager.addInput(inputManager);
     }
 
     @Override
@@ -119,6 +121,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         if (isTypeKeyPressDOWN) {
             if (getSelectedOption().equals(choiceCharacterLabel)) {
                 dispose();
+                gameManager.removeInput(inputManager);
                 gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
             } else if (getSelectedOption().equals(exitLabel)) {
                 Gdx.app.exit();
@@ -140,6 +143,7 @@ public class MenuScreen extends ScreenAdapter implements Screen {
         if (isTypeKeyPressDOWN) {
             if (getSelectedOption().equals(choiceCharacterLabel)) {
                 dispose();
+                gameManager.removeInput(inputManager);
                 gameManager.setScreen(new ChoiceCharacterScreen(gameManager));
             } else if (getSelectedOption().equals(exitLabel)) {
                 Gdx.app.exit();

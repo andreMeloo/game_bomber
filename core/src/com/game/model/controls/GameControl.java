@@ -1,7 +1,8 @@
 package com.game.model.controls;
 
-import com.game.View.screen.MoveCharacterScreen;
+import com.game.View.screen.PlayGameScreen;
 import com.game.View.screen.ScreenAdapter;
+import com.game.model.objects.GameObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class GameControl extends ControlAdapter {
     public boolean processKeyDown(int keycode, ScreenAdapter currentScreen) {
         setScreen(currentScreen);
 
-        if (currentScreen instanceof MoveCharacterScreen) {
+        if (currentScreen instanceof PlayGameScreen) {
             if (!keys.contains(keycode))
                 keys.push(keycode);
         }
@@ -36,7 +37,7 @@ public class GameControl extends ControlAdapter {
     public boolean processKeyUp(int keycode, ScreenAdapter currentScreen) {
         setScreen(currentScreen);
 
-        if (currentScreen instanceof MoveCharacterScreen) {
+        if (currentScreen instanceof PlayGameScreen) {
             keys.removeElement(keycode);
 
             if (!keys.isEmpty()) {
@@ -45,11 +46,31 @@ public class GameControl extends ControlAdapter {
             }
         }
 
+
         Runnable operation = keyOperations.get(ControlsConfig.INPUT_KEY_UP + keycode);
         if (operation != null)
             operation.run();
 
         return true;
+    }
+
+    @Override
+    public boolean processKeyDown(int keycode, GameObject gameObject) {
+        return false;
+    }
+
+    @Override
+    public boolean processKeyUp(int keycode, GameObject gameObject) {
+//        if (gameObject instanceof PlayGameScreen) {
+//            keys.removeElement(keycode);
+//
+//            if (!keys.isEmpty()) {
+//                if (ControlsConfig.getButtonsMove().contains(keys.peek()))
+//                    return processKeyDown(keys.peek(), gameObject);
+//            }
+//        }
+
+        return false;
     }
 
     public void setScreen(ScreenAdapter screen) {

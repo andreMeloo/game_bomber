@@ -6,17 +6,17 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
-import com.game.model.controls.ControlAdapter;
 import com.game.model.controls.GameControl;
 
-public class MoveCharacterScreen extends ScreenAdapter implements Screen {
+public class PlayGameScreen extends ScreenAdapter implements Screen {
     final GameManager gameManager;
+    private InputManager inputManager;
+
 
     /**
      * Statics Values
@@ -32,8 +32,6 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
     private Array<TextureRegion> animationFrames;
     private Rectangle rectanglePlayer;
     private Rectangle rectangleView;
-    private ShapeRenderer shapePlayer;
-    private ShapeRenderer shapeView;
 
 
     /**
@@ -48,26 +46,22 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
     private float modifPositionY;
 
 
-    public MoveCharacterScreen(final GameManager gameManager) {
+    public PlayGameScreen(final GameManager gameManager) {
         this.gameManager = gameManager;
-        this.gameManager.setInputManager(new InputManager(new GameControl(), this));
-        this.gameManager.setInput();
+        inputManager = new InputManager(new GameControl(), this);
+        this.gameManager.addInput(inputManager);
         rectangleView = new Rectangle(10,10, Gdx.graphics.getWidth() - 20, Gdx.graphics.getHeight() - 20);
     }
 
     @Override
     public void show() {
         stateTime = 0f;
-        positionX = 300f;
-        positionY = 300f;
+        positionX = Gdx.graphics.getWidth() / 2f;
+        positionY = Gdx.graphics.getHeight() / 2f;
         modifPositionX = 0;
         modifPositionY = 0;
         row = 1;
         coluns = 1;
-        shapePlayer = new ShapeRenderer();
-        shapeView = new ShapeRenderer();
-        shapeView.setColor(Color.RED);
-        shapePlayer.setColor(Color.RED);
         rectanglePlayer = new Rectangle();
         loadAnimationSheet();
     }
@@ -81,9 +75,6 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
 
         loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
         renderAnimationFrames(animationFrames.size, delta);
-        shapeView.begin(ShapeRenderer.ShapeType.Line);
-        shapeView.rect(rectangleView.x, rectangleView.y, rectangleView.width, rectangleView.height);
-        shapeView.end();
     }
 
     private void treatPlayerCollision() {
@@ -123,8 +114,6 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
     @Override
     public void dispose() {
         animationSheet.dispose();
-        shapeView.dispose();
-        shapePlayer.dispose();
     }
 
     @Override
@@ -199,6 +188,7 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
     public void pressStart(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
             dispose();
+            gameManager.removeInput(inputManager);
             gameManager.setScreen(new MenuScreen(gameManager));
         }
     }
@@ -213,9 +203,6 @@ public class MoveCharacterScreen extends ScreenAdapter implements Screen {
         gameManager.batch.begin();
         gameManager.batch.draw(currentFrame, positionX, positionY);
         gameManager.batch.end();
-        shapePlayer.begin(ShapeRenderer.ShapeType.Line);
-        shapePlayer.rect(rectanglePlayer.x, rectanglePlayer.y, rectanglePlayer.width, rectanglePlayer.height);
-        shapePlayer.end();
     }
 
     private void loadAnimationFrame(int row, int coluns, float modifPositionX, float modifPositionY) {

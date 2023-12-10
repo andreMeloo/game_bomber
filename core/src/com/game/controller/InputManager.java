@@ -3,25 +3,34 @@ package com.game.controller;
 import com.badlogic.gdx.InputProcessor;
 import com.game.model.controls.ControlAdapter;
 import com.game.View.screen.ScreenAdapter;
+import com.game.model.objects.GameObject;
 
 public class InputManager implements InputProcessor {
 
     private ControlAdapter controler;
     private ScreenAdapter currentScreen;
+    private GameObject gameObject;
 
     public InputManager(ControlAdapter controler, ScreenAdapter currentScreen) {
         this.controler = controler;
         this.currentScreen = currentScreen;
     }
 
+    public InputManager(ControlAdapter controler, GameObject gameObject) {
+        this.controler = controler;
+        this.gameObject = gameObject;
+    }
+
     @Override
     public boolean keyDown(int keycode) {
-        return controler.processKeyDown(keycode, currentScreen);
+        return currentScreen != null ? controler.processKeyDown(keycode, currentScreen)
+                : gameObject != null && controler.processKeyDown(keycode, gameObject);
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        return controler.processKeyUp(keycode, currentScreen);
+        return currentScreen != null ? controler.processKeyUp(keycode, currentScreen)
+                : gameObject != null && controler.processKeyUp(keycode, gameObject);
     }
 
     @Override
@@ -59,19 +68,11 @@ public class InputManager implements InputProcessor {
         return false;
     }
 
-    public ControlAdapter getControler() {
-        return controler;
-    }
-
-    public void setControler(ControlAdapter controler) {
-        this.controler = controler;
-    }
-
     public ScreenAdapter getCurrentScreen() {
         return currentScreen;
     }
 
-    public void setCurrentScreen(ScreenAdapter currentScreen) {
-        this.currentScreen = currentScreen;
+    public GameObject getGameObject() {
+        return gameObject;
     }
 }

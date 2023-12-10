@@ -2,23 +2,18 @@ package com.game.controller;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
-import com.game.View.screen.ChoiceCharacterScreen;
 import com.game.View.screen.MenuScreen;
-import com.game.model.controls.GameControl;
 
 
 public class GameManager extends Game {
     public SpriteBatch batch;
-    private InputManager inputManager;
+    private InputMultiplexer inputMultiplexer;
 
     @Override
     public void create() {
-//        Gdx.graphics.setUndecorated(true);
+        inputMultiplexer = new InputMultiplexer();
         batch = new SpriteBatch();
         this.setScreen(new MenuScreen(this));
     }
@@ -34,15 +29,17 @@ public class GameManager extends Game {
         this.getScreen().dispose();
     }
 
-    public void setInput() {
-        Gdx.input.setInputProcessor(inputManager);
+    public void addInput(InputManager input) {
+        getInputMultiplexer().addProcessor(input);
+        Gdx.input.setInputProcessor(getInputMultiplexer());
     }
 
-    public InputManager getInputManager() {
-        return inputManager;
+    public void removeInput(InputManager input) {
+        getInputMultiplexer().removeProcessor(input);
+        Gdx.input.setInputProcessor(getInputMultiplexer());
     }
 
-    public void setInputManager(InputManager inputManager) {
-        this.inputManager = inputManager;
+    public InputMultiplexer getInputMultiplexer() {
+        return inputMultiplexer;
     }
 }

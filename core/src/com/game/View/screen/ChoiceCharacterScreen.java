@@ -14,7 +14,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
-import com.game.model.controls.ControlAdapter;
 import com.game.model.controls.GameControl;
 import com.game.util.UniversalUtil;
 import java.util.LinkedHashMap;
@@ -23,6 +22,8 @@ import java.util.Objects;
 
 public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     final GameManager gameManager;
+    private InputManager inputManager;
+
     private Stage stage;
     private Texture textureSelectCaracter;
     Map<Image, Pair<Integer, Integer>> imagePositions;
@@ -43,8 +44,8 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         this.gameManager = gameManager;
         viewport =  new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage = new Stage(viewport);
-        this.gameManager.setInputManager(new InputManager(new GameControl(), this));
-        this.gameManager.setInput();
+        this.inputManager = new InputManager(new GameControl(), this);
+        this.gameManager.addInput(inputManager);
     }
 
     @Override
@@ -59,9 +60,11 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
         for (int i = 0; i < ROWS_CHARACTERS; i++) {
             for (int j = 0; j < COLUMNS_CHARACTERS; j++) {
                 Image image = new Image(textureSelectCaracter);
+                image.setWidth(image.getWidth() * 2.5f);
+                image.setHeight(image.getHeight() * 2.5f);
                 image.setPosition(
                         (getWidthCenterStage() - ((image.getWidth() * COLUMNS_CHARACTERS) + ((SPACE_BETWEEN_CHARACTERS * 5) * (COLUMNS_CHARACTERS - 1))) / 2f) + ((image.getWidth() + (SPACE_BETWEEN_CHARACTERS * 5)) * j),
-                        (getHeightCenterStage() + ((image.getHeight() * ROWS_CHARACTERS) + ((SPACE_BETWEEN_CHARACTERS * 2) * (ROWS_CHARACTERS - 1))) / 2f) - ((image.getHeight() + (SPACE_BETWEEN_CHARACTERS * 2)) * i)
+                        ((getHeightCenterStage() - (image.getHeight()*3)) + ((image.getHeight() * (ROWS_CHARACTERS - 1)) + ((SPACE_BETWEEN_CHARACTERS * 2) * (ROWS_CHARACTERS - 1))) / 2f) - ((image.getHeight() + (SPACE_BETWEEN_CHARACTERS * 2)) * i)
                 );
                 imagePositions.put(image, new Pair<>(i,j));
                 stage.addActor(image);
@@ -191,7 +194,8 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     public void pressActionA(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
             dispose();
-            gameManager.setScreen(new MoveCharacterScreen(gameManager));
+            gameManager.removeInput(inputManager);
+            gameManager.setScreen(new PlayGameScreen(gameManager));
         }
     }
 
@@ -199,6 +203,7 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     public void pressActionY(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
             dispose();
+            gameManager.removeInput(inputManager);
             gameManager.setScreen(new MenuScreen(gameManager));
         }
     }
@@ -207,7 +212,8 @@ public class ChoiceCharacterScreen extends ScreenAdapter implements Screen {
     public void pressStart(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
             dispose();
-            gameManager.setScreen(new MoveCharacterScreen(gameManager));
+            gameManager.removeInput(inputManager);
+            gameManager.setScreen(new PlayGameScreen(gameManager));
         }
     }
 
