@@ -39,6 +39,15 @@ allprojects {
     }
 }
 
+subprojects {
+    afterEvaluate {
+        java {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+    }
+}
+
 project(":desktop") {
     apply plugin: "java-library"
 

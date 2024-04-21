@@ -14,6 +14,8 @@ public class ControlsConfig {
     public final static int ACTION_A = Input.Keys.D;
     public final static int ACTION_Y = Input.Keys.A;
     public final static int START = Input.Keys.ENTER;
+    public final static String INPUT_KEY_UP = "1";
+    public final static String INPUT_KEY_DOWN = "2";
 
     public static boolean isPressUP(int keyCode) {
         return keyCode == UP;
@@ -43,9 +45,26 @@ public class ControlsConfig {
         return keyCode == START;
     }
 
+
+    public static List<Integer> getAllButtons() {
+        return Arrays.asList(
+                UP, DOWN, LEFT, RIGHT, ACTION_A, ACTION_Y, START
+        );
+    }
+
     public static List<Integer> getButtonsMove() {
         return Arrays.asList(
                 UP, DOWN, LEFT, RIGHT
         );
+    }
+
+    public static List<Integer> getButtonsActions() {
+        return Arrays.asList(
+                ACTION_A, ACTION_Y, START
+        );
+    }
+
+    public String toString(int controlConfig) {
+        return String.valueOf(controlConfig);
     }
 }
