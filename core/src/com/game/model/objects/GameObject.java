@@ -11,7 +11,8 @@ import com.badlogic.gdx.utils.Array;
 import com.game.View.screen.ChoiceCharacterScreen;
 
 public class GameObject {
-    Screen screen;
+    private Screen screen;
+    private float stateTime;
 
     private Vector2 position;
     private Vector2 velocity;
@@ -26,10 +27,12 @@ public class GameObject {
         this.screen = screen;
         this.collisionRectangle = new Rectangle();
         this.velocity = new Vector2();
+        this.stateTime = 0;
         updateCollisionRectangle();
     }
 
     public void update(float deltaTime) {
+        stateTime += deltaTime;
         position.add(velocity.x * deltaTime, velocity.y * deltaTime);
         updateCollisionRectangle();
         updateAnimationFrames();
@@ -99,6 +102,22 @@ public class GameObject {
         return collisionRectangle;
     }
 
+    public Vector2 leftBottomVectorCollision() {
+        return new Vector2(getCollisionRectangle().getX(), getCollisionRectangle().getY());
+    }
+
+    public Vector2 leftTopVectorCollision() {
+        return new Vector2(getCollisionRectangle().getX(), getCollisionRectangle().getY() + getCollisionRectangle().getHeight());
+    }
+
+    public Vector2 rightBottomVectorCollision() {
+        return new Vector2(getCollisionRectangle().getX() + getCollisionRectangle().getWidth(), getCollisionRectangle().getY());
+    }
+
+    public Vector2 rightTopVectorCollision() {
+        return new Vector2(getCollisionRectangle().getX() + getCollisionRectangle().getWidth(), getCollisionRectangle().getY() + getCollisionRectangle().getHeight());
+    }
+
     public void setVelocity(Vector2 velocity) {
         velocity.set(velocity);
     }
@@ -145,5 +164,21 @@ public class GameObject {
 
     public void setAnimationFrames(Array<TextureRegion> animationFrames) {
         this.animationFrames = animationFrames;
+    }
+
+    public Screen getScreen() {
+        return screen;
+    }
+
+    public void setScreen(Screen screen) {
+        this.screen = screen;
+    }
+
+    public float getStateTime() {
+        return stateTime;
+    }
+
+    public void setStateTime(float stateTime) {
+        this.stateTime = stateTime;
     }
 }

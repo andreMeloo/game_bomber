@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -24,11 +25,20 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
      * Statics Values
      */
     private static final String PLAYER = "cowboy.png";
+    private static final String MAP = "map-teste.png";
+    private static final String BLOCK = "block-colision.png";
     private static final float FRAME_DURATION_PLAYER = .25f; // Defina a duração de cada frame da animação
-    private static final float FRAME_DURATION_BOMB = .7f; // Defina a duração de cada frame da animação
+    private static final float FRAME_DURATION_BOMB = .5f; // Defina a duração de cada frame da animação
     private static final int TILESET_WIDTH = 4;
     private static final int TILESET_HEIGHT = 4;
 
+
+    /**
+     * testes colisão
+     */
+    private Texture map;
+    private Texture colision;
+    private List<Rectangle> rectangleUniversalColision;
 
     private Texture animationSheet;
     private TextureRegion[][] frames;
@@ -55,28 +65,39 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
 
     private ShapeRenderer shapeView;
     private ShapeRenderer shapePlayer;
+    boolean isColision;
 
 
     public PlayGameScreen(final GameManager gameManager) {
         super(gameManager);
         setInputManager(new InputManager(new GameControl(), this));
         getGameManager().addInput(getInputManager());
-        rectangleView = new Rectangle(150,50, Gdx.graphics.getWidth() - 300, Gdx.graphics.getHeight() - 100);
     }
 
     @Override
     public void show() {
         stateTime = 0f;
-        positionX = Gdx.graphics.getWidth() / 2f;
-        positionY = Gdx.graphics.getHeight() / 2f;
         modifPositionX = 0;
         modifPositionY = 0;
         row = 1;
         coluns = 1;
         rectanglePlayer = new Rectangle();
-        shapeView = new ShapeRenderer();
         shapePlayer = new ShapeRenderer();
         activeBombsList = new ArrayList<>();
+        shapeView = new ShapeRenderer();
+        rectangleUniversalColision = new ArrayList<>();
+
+        /**
+         * testes colisão
+         */
+        map = new Texture(Gdx.files.internal(MAP));
+        colision = new Texture(Gdx.files.internal(BLOCK));
+
+
+        positionX = 300;
+        positionY = 250;
+        rectanglePlayer.setPosition(positionX, positionY);
+        rectanglePlayer.setSize(colision.getWidth(), colision.getHeight());
         loadAnimationSheet();
     }
 
@@ -85,29 +106,45 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         ScreenUtils.clear(Color.DARK_GRAY);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        getGameManager().batch.begin();
+        getGameManager().batch.draw(map, Gdx.graphics.getWidth() / 2f - (map.getWidth() / 2f), (Gdx.graphics.getHeight() / 2f) - (map.getHeight() / 2f));
+        getGameManager().batch.end();
+
+        renderObjectsFrames(delta);
         treatPlayerCollision();
-
         loadAnimationFrame(row, coluns, modifPositionX, modifPositionY);
-
-        renderObjectsFrames(stateTime);
         renderAnimationFrames(animationFrames.size, delta);
-
-        shapeView.begin(ShapeRenderer.ShapeType.Line);
-        shapeView.setColor(Color.RED);
-        shapeView.rect(rectangleView.x, rectangleView.y, rectangleView.width, rectangleView.height);
-        shapeView.end();
     }
 
     private void treatPlayerCollision() {
-        if (!rectangleView.contains(rectanglePlayer)) {
-            if (rectanglePlayer.y < rectangleView.y && modifPositionY < 0) {
-                modifPositionY = 0;
-            } else if (rectanglePlayer.y + rectanglePlayer.height > rectangleView.y + rectangleView.height && modifPositionY > 0) {
-                modifPositionY = 0;
-            } else if (rectanglePlayer.x < rectangleView.x && modifPositionX < 0) {
-                modifPositionX = 0;
-            } else if (rectanglePlayer.x + rectanglePlayer.width > rectangleView.x + rectangleView.width && modifPositionX > 0) {
-                modifPositionX = 0;
+        for (Bomb bomb : activeBombsList) {
+            if ((modifPositionY != 0 || modifPositionX != 0)) {
+                // Margem de segurança para a detecção de colisão
+                float margemSeguranca = 2.0f; // Ajuste conforme necessário
+
+                // Calcular coordenadas dos pontos relevantes para a linha superior do jogador
+                Vector2 leftPlayerX = new Vector2(rectanglePlayer.x, rectanglePlayer.y - margemSeguranca);
+                Vector2 leftPlayerY = new Vector2(rectanglePlayer.x, rectanglePlayer.y + rectanglePlayer.height - margemSeguranca);
+                Vector2 rightPlayerX = new Vector2(rectanglePlayer.x + rectanglePlayer.width, rectanglePlayer.y - margemSeguranca);
+                Vector2 rightPlayerY = new Vector2(rectanglePlayer.x + rectanglePlayer.width, rectanglePlayer.y + rectanglePlayer.height - margemSeguranca);
+
+                if (modifPositionY < 0) {
+                    if ((Intersector.intersectSegments(leftPlayerX, leftPlayerY, bomb.leftTopVectorCollision(), bomb.rightTopVectorCollision(), new Vector2())
+                            || Intersector.intersectSegments(rightPlayerX, rightPlayerY, bomb.leftTopVectorCollision(), bomb.rightTopVectorCollision(), new Vector2())))
+                        modifPositionY = 0;
+                } else if (modifPositionY > 0) {
+                    if ((Intersector.intersectSegments(leftPlayerX, leftPlayerY, bomb.leftBottomVectorCollision(), bomb.rightBottomVectorCollision(), new Vector2())
+                            || Intersector.intersectSegments(rightPlayerX, rightPlayerY, bomb.leftBottomVectorCollision(), bomb.rightBottomVectorCollision(), new Vector2())))
+                        modifPositionY = 0;
+                } else if (modifPositionX > 0) {
+                    if ((Intersector.intersectSegments(leftPlayerX, rightPlayerX, bomb.leftBottomVectorCollision(), bomb.leftTopVectorCollision(), new Vector2())
+                            || Intersector.intersectSegments(leftPlayerY, rightPlayerY, bomb.leftBottomVectorCollision(), bomb.leftTopVectorCollision(), new Vector2())))
+                        modifPositionX = 0;
+                } else if (modifPositionX < 0) {
+                    if ((Intersector.intersectSegments(leftPlayerX, rightPlayerX, bomb.rightBottomVectorCollision(), bomb.rightTopVectorCollision(), new Vector2())
+                            || Intersector.intersectSegments(leftPlayerY, rightPlayerY, bomb.rightBottomVectorCollision(), bomb.rightTopVectorCollision(), new Vector2())))
+                        modifPositionX = 0;
+                }
             }
         }
     }
@@ -136,7 +173,12 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     public void dispose() {
         animationSheet.dispose();
         shapePlayer.dispose();
+        map.dispose();
+        colision.dispose();
         shapeView.dispose();
+        for (Bomb bomb : activeBombsList) {
+            bomb.dispose();
+        }
     }
 
     @Override
@@ -202,7 +244,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     @Override
     public void pressActionA(boolean isTypeKeyPressDOWN) {
         if (isTypeKeyPressDOWN) {
-            Bomb bomb = new Bomb(new Vector2(positionX, positionY), this);
+            Bomb bomb = new Bomb(new Vector2(frames[0][0].getRegionWidth() / 2f + positionX, positionY), this);
             activeBombsList.add(bomb);
         }
     }
@@ -226,7 +268,6 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         int nextFrame = (int) (stateTime / FRAME_DURATION_PLAYER) % totalFrames;
         TextureRegion currentFrame = animationFrames.get(nextFrame);
         rectanglePlayer.setPosition(positionX, positionY);
-        rectanglePlayer.setSize(currentFrame.getRegionWidth() - 2f, currentFrame.getRegionHeight() - (30f/100 * currentFrame.getRegionHeight()));
         shapePlayer.begin(ShapeRenderer.ShapeType.Line);
         shapePlayer.setColor(Color.RED);
         shapePlayer.rect(rectanglePlayer.x, rectanglePlayer.y, rectanglePlayer.width, rectanglePlayer.height);
@@ -236,20 +277,28 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         getGameManager().batch.end();
     }
 
-    private void renderObjectsFrames(float stateTime) {
-        int timeFrame = (int) (stateTime / FRAME_DURATION_BOMB);
+    private void renderObjectsFrames(float delta) {
+        int timeFrame = 0;
         int nextFrame = 0;
         TextureRegion currentFrame = new TextureRegion();
 
-        if (activeBombsList.size() > 0) {
+        if (!activeBombsList.isEmpty()) {
             getGameManager().batch.begin();
             for (Bomb bomb : activeBombsList) {
-                bomb.update(stateTime);
+                bomb.update(delta);
+                timeFrame = (int) (bomb.getStateTime() / FRAME_DURATION_BOMB);
                 nextFrame = timeFrame % bomb.getAnimationFrames().size;
                 currentFrame = bomb.getAnimationFrames().get(nextFrame);
+                bomb.getCollisionRectangle().setWidth(colision.getWidth());
+                bomb.getCollisionRectangle().setHeight(colision.getHeight());
                 getGameManager().batch.draw(currentFrame, bomb.getPosition().x, bomb.getPosition().y);
             }
             getGameManager().batch.end();
+
+            shapeView.begin(ShapeRenderer.ShapeType.Line);
+            shapeView.setColor(Color.RED);
+            shapeView.rect(activeBombsList.get(0).getPosition().x, activeBombsList.get(0).getPosition().y, colision.getWidth(), colision.getHeight());
+            shapeView.end();
         }
     }
 
