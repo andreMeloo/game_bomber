@@ -28,17 +28,27 @@ public class GameObject {
         this.collisionRectangle = new Rectangle();
         this.velocity = new Vector2();
         this.stateTime = 0;
+        this.collisionRectangle.width = WorldCollision.WIDTH_COLLISION_UNIVERSAL;
+        this.collisionRectangle.height = WorldCollision.HEIGHT_COLLISION_UNIVERSAL;
         updateCollisionRectangle();
     }
 
     public void update(float deltaTime) {
         stateTime += deltaTime;
-        position.add(velocity.x * deltaTime, velocity.y * deltaTime);
+        position.add(velocity.x, velocity.y);
         updateCollisionRectangle();
         updateAnimationFrames();
     }
 
+    public void update(float deltaTime, int row, int coluns) {
+        stateTime += deltaTime;
+        position.add(velocity.x, velocity.y);
+        updateCollisionRectangle();
+        updateAnimationFrames(coluns, row);
+    }
+
     public void accelerate(float accelerationX, float accelerationY) {
+        stop();
         velocity.add(accelerationX, accelerationY);
     }
 
@@ -63,13 +73,19 @@ public class GameObject {
         }
     }
 
-    public void updateAnimationFrames(int coluns) {
+    public void updateAnimationFrames(int coluns, int row) {
         animationFrames = new Array<>();
-        for (int i = currentDirectionMove - 1; i < currentDirectionMove; i++) {
+        for (int i = row - 1; i < row; i++) {
             for (int j = 0; j < coluns; j++) {
                 animationFrames.add(frames[i][j]);
             }
         }
+    }
+
+    public TextureRegion getCurrentFrame(float frameDuration, float delta) {
+        stateTime += delta;
+        int nextFrame = (int) ((getStateTime() / frameDuration) % getAnimationFrames().size);
+        return getAnimationFrames().get(nextFrame);
     }
 
     public void dispose() {

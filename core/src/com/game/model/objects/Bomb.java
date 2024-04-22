@@ -12,6 +12,7 @@ public class Bomb extends GameObject {
     private static final String BOMBER_SPRITE = "bomber.png";
     private static final int TILESET_WIDTH = 4;
     private static final int TILESET_HEIGHT = 3;
+    private static final float FRAME_DURATION_BOMB = .5f;
 
     public Bomb(Vector2 position, Screen screen) {
         super(position, screen);
@@ -21,6 +22,10 @@ public class Bomb extends GameObject {
 
     private void loadAnimationSheet() {
         setFrames(TextureRegion.split(getAnimationSheet(), getAnimationSheet().getWidth() / TILESET_WIDTH, getAnimationSheet().getHeight() / TILESET_HEIGHT));
+    }
+
+    public TextureRegion getCurrentFrame(float delta) {
+        return super.getCurrentFrame(FRAME_DURATION_BOMB, delta);
     }
 
     public void dispose() {
