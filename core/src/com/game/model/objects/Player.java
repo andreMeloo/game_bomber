@@ -9,14 +9,15 @@ import com.badlogic.gdx.math.Vector2;
 public class Player extends GameObject{
 
     private static final String PLAYER_SPRITE = "cowboy.png";
-    private static final float FRAME_DURATION_PLAYER = .4f;
+    private static final float FRAME_DURATION_PLAYER = .15f;
     private static final int TILESET_WIDTH = 4;
     private static final int TILESET_HEIGHT = 4;
-    public static final float ACCELERATE_PLAYER = 1.8f;
+    public static final float ACCELERATE_PLAYER = 2f;
 
     // Atributos para controle dos frames do player
     private int rowFrame;
     private int collunsFrames;
+    private boolean plantBombActive = false;
     public static final int NUMBER_ROW_FRAMES_1 = 1;
     public static final int NUMBER_ROW_FRAMES_2 = 2;
     public static final int NUMBER_ROW_FRAMES_3 = 3;
@@ -31,15 +32,12 @@ public class Player extends GameObject{
         collunsFrames = 1;
         setAnimationSheet(new Texture(Gdx.files.internal(PLAYER_SPRITE)));
         loadAnimationSheet();
+        updatePositionAnimation();
     }
 
     private void loadAnimationSheet() {
         setFrames(TextureRegion.split(getAnimationSheet(), getAnimationSheet().getWidth() / TILESET_WIDTH, getAnimationSheet().getHeight() / TILESET_HEIGHT));
-    }
-
-    @Override
-    public void updateCollisionRectangle() {
-        getCollisionRectangle().setPosition(getPosition().x + 4.5f, getPosition().y);
+        setWidth(((float) getAnimationSheet().getWidth() / TILESET_WIDTH) - getCollisionRectangle().getWidth());
     }
 
     public TextureRegion getCurrentFrame(float delta) {
@@ -62,5 +60,13 @@ public class Player extends GameObject{
 
     public void setCollunsFrames(int collunsFrames) {
         this.collunsFrames = collunsFrames;
+    }
+
+    public boolean isPlantBombActive() {
+        return plantBombActive;
+    }
+
+    public void setPlantBombActive(boolean plantBombActive) {
+        this.plantBombActive = plantBombActive;
     }
 }

@@ -16,6 +16,7 @@ public class GameObject {
 
     private Vector2 position;
     private Vector2 velocity;
+    private float width;
     private Rectangle collisionRectangle;
     private Texture animationSheet;
     private TextureRegion[][] frames;
@@ -23,33 +24,30 @@ public class GameObject {
     private int currentDirectionMove;
 
     public GameObject(Vector2 position, Screen screen) {
-        this.position = position;
         this.screen = screen;
         this.collisionRectangle = new Rectangle();
         this.velocity = new Vector2();
+        this.position = new Vector2();
         this.stateTime = 0;
         this.collisionRectangle.width = WorldCollision.WIDTH_COLLISION_UNIVERSAL;
         this.collisionRectangle.height = WorldCollision.HEIGHT_COLLISION_UNIVERSAL;
-        updateCollisionRectangle();
+        this.collisionRectangle.setPosition(new Vector2(position.x, position.y));
     }
 
-    public void update(float deltaTime) {
-        stateTime += deltaTime;
-        position.add(velocity.x, velocity.y);
+    public void update() {
         updateCollisionRectangle();
+        updatePositionAnimation();
         updateAnimationFrames();
     }
 
-    public void update(float deltaTime, int row, int coluns) {
-        stateTime += deltaTime;
-        position.add(velocity.x, velocity.y);
+    public void update(int row, int coluns) {
         updateCollisionRectangle();
+        updatePositionAnimation();
         updateAnimationFrames(coluns, row);
     }
 
     public void accelerate(float accelerationX, float accelerationY) {
-        stop();
-        velocity.add(accelerationX, accelerationY);
+        velocity.set(accelerationX, accelerationY);
     }
 
     public void stop() {
@@ -58,7 +56,15 @@ public class GameObject {
 
     // Método para atualizar o retângulo de colisão conforme a posição do objeto
     public void updateCollisionRectangle() {
-        collisionRectangle.setPosition(position.x, position.y);
+        collisionRectangle.setPosition(getCollisionRectangle().x + velocity.x, getCollisionRectangle().y + velocity.y);
+    }
+
+    public void updatePositionAnimation() {
+        if (width > 0) {
+            position.set(getCollisionRectangle().x - (width / 2f), getCollisionRectangle().y);
+        } else {
+            position.set(getCollisionRectangle().x + (width / 2f), getCollisionRectangle().y);
+        }
     }
 
     public void updateAnimationFrames() {
@@ -92,50 +98,16 @@ public class GameObject {
         animationSheet.dispose();
     }
 
-    public void pressUp(boolean isTypeKeyPressDOWN) {
-    }
-
-    public void pressDown(boolean isTypeKeyPressDOWN) {
-
-    }
-
-    public void pressLeft(boolean isTypeKeyPressDOWN) {
-    }
-
-    public void pressRight(boolean isTypeKeyPressDOWN) {
-    }
-
-    public void pressActionA(boolean isTypeKeyPressDOWN) {
-    }
-
-    public void pressActionY(boolean isTypeKeyPressDOWN) {
-    }
-
-    public void pressStart(boolean isTypeKeyPressDOWN) {
-    }
-
     public Rectangle getCollisionRectangle() {
         return collisionRectangle;
     }
 
-    public Vector2 leftBottomVectorCollision() {
-        return new Vector2(getCollisionRectangle().getX(), getCollisionRectangle().getY());
-    }
-
-    public Vector2 leftTopVectorCollision() {
-        return new Vector2(getCollisionRectangle().getX(), getCollisionRectangle().getY() + getCollisionRectangle().getHeight());
-    }
-
-    public Vector2 rightBottomVectorCollision() {
-        return new Vector2(getCollisionRectangle().getX() + getCollisionRectangle().getWidth(), getCollisionRectangle().getY());
-    }
-
-    public Vector2 rightTopVectorCollision() {
-        return new Vector2(getCollisionRectangle().getX() + getCollisionRectangle().getWidth(), getCollisionRectangle().getY() + getCollisionRectangle().getHeight());
+    public void setCollisionRectangle(Rectangle collisionRectangle) {
+        this.collisionRectangle = collisionRectangle;
     }
 
     public void setVelocity(Vector2 velocity) {
-        velocity.set(velocity);
+        this.velocity.set(velocity);
     }
 
     public Vector2 getVelocity() {
@@ -196,5 +168,13 @@ public class GameObject {
 
     public void setStateTime(float stateTime) {
         this.stateTime = stateTime;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
     }
 }

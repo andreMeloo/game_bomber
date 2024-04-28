@@ -22,7 +22,7 @@ public class GameControl extends ControlAdapter {
         setScreen(currentScreen);
 
         if (currentScreen instanceof PlayGameScreen) {
-            if (!keys.contains(keycode))
+            if (!keys.contains(keycode) && ControlsConfig.getButtonsMove().contains(keycode))
                 keys.push(keycode);
         }
 
@@ -37,7 +37,7 @@ public class GameControl extends ControlAdapter {
     public boolean processKeyUp(int keycode, ScreenAdapter currentScreen) {
         setScreen(currentScreen);
 
-        if (currentScreen instanceof PlayGameScreen) {
+        if (currentScreen instanceof PlayGameScreen && ControlsConfig.getButtonsMove().contains(keycode)) {
             keys.removeElement(keycode);
 
             if (!keys.isEmpty()) {
@@ -54,25 +54,6 @@ public class GameControl extends ControlAdapter {
         return true;
     }
 
-    @Override
-    public boolean processKeyDown(int keycode, GameObject gameObject) {
-        return false;
-    }
-
-    @Override
-    public boolean processKeyUp(int keycode, GameObject gameObject) {
-//        if (gameObject instanceof PlayGameScreen) {
-//            keys.removeElement(keycode);
-//
-//            if (!keys.isEmpty()) {
-//                if (ControlsConfig.getButtonsMove().contains(keys.peek()))
-//                    return processKeyDown(keys.peek(), gameObject);
-//            }
-//        }
-
-        return false;
-    }
-
     public void setScreen(ScreenAdapter screen) {
         this.screen = screen;
     }
@@ -82,7 +63,7 @@ public class GameControl extends ControlAdapter {
         keyOperations.put(ControlsConfig.INPUT_KEY_UP + ControlsConfig.LEFT, () -> screen.pressLeft(false));
         keyOperations.put(ControlsConfig.INPUT_KEY_UP + ControlsConfig.RIGHT, () -> screen.pressRight(false));
         keyOperations.put(ControlsConfig.INPUT_KEY_UP + ControlsConfig.UP, () -> screen.pressUp(false));
-
+        keyOperations.put(ControlsConfig.INPUT_KEY_UP + ControlsConfig.ACTION_A, () -> screen.pressActionA(false));
 
         keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.DOWN, () -> screen.pressDown(true));
         keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.UP, () -> screen.pressUp(true));
@@ -91,5 +72,21 @@ public class GameControl extends ControlAdapter {
         keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.START, () -> screen.pressStart(true));
         keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.ACTION_A, () -> screen.pressActionA(true));
         keyOperations.put(ControlsConfig.INPUT_KEY_DOWN + ControlsConfig.ACTION_Y, () -> screen.pressActionY(true));
+    }
+
+    public ScreenAdapter getScreen() {
+        return screen;
+    }
+
+    public Map<String, Runnable> getKeyOperations() {
+        return keyOperations;
+    }
+
+    public Stack<Integer> getKeys() {
+        return keys;
+    }
+
+    public void setKeys(Stack<Integer> keys) {
+        this.keys = keys;
     }
 }
