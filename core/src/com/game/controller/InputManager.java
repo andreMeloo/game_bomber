@@ -16,21 +16,14 @@ public class InputManager implements InputProcessor {
         this.currentScreen = currentScreen;
     }
 
-    public InputManager(ControlAdapter controler, GameObject gameObject) {
-        this.controler = controler;
-        this.gameObject = gameObject;
-    }
-
     @Override
     public boolean keyDown(int keycode) {
-        return currentScreen != null ? controler.processKeyDown(keycode, currentScreen)
-                : gameObject != null && controler.processKeyDown(keycode, gameObject);
+        return controler.processKeyDown(keycode, currentScreen);
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        return currentScreen != null ? controler.processKeyUp(keycode, currentScreen)
-                : gameObject != null && controler.processKeyUp(keycode, gameObject);
+        return controler.processKeyUp(keycode, currentScreen);
     }
 
     @Override
@@ -74,5 +67,21 @@ public class InputManager implements InputProcessor {
 
     public GameObject getGameObject() {
         return gameObject;
+    }
+
+    public ControlAdapter getControler() {
+        return controler;
+    }
+
+    public void setControler(ControlAdapter controler) {
+        this.controler = controler;
+    }
+
+    public void setCurrentScreen(ScreenAdapter currentScreen) {
+        this.currentScreen = currentScreen;
+    }
+
+    public void setGameObject(GameObject gameObject) {
+        this.gameObject = gameObject;
     }
 }

@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
+import com.game.model.controls.ControlsConfig;
 import com.game.model.controls.GameControl;
 import com.game.model.objects.Bomb;
 import com.game.model.objects.Player;
@@ -43,8 +44,9 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
      */
     private float stateTime;
     Player playerTeste;
-    Vector2 initCollisionMap;
+    Rectangle initCollisionMap;
     Vector2 positionMap;
+    ShapeRenderer view;
 
     public PlayGameScreen(final GameManager gameManager) {
         super(gameManager);
@@ -64,12 +66,15 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         map = new Texture(Gdx.files.internal(MAP));
 
         positionMap = new Vector2(Gdx.graphics.getWidth() / 2f - (map.getWidth() / 2f), (Gdx.graphics.getHeight() / 2f) - (map.getHeight() / 2f));
-        initCollisionMap = new Vector2(positionMap.x + 53f, positionMap.y + 46f);
+        initCollisionMap = new Rectangle(positionMap.x + 47f, positionMap.y + 41f, 626,  530);
         playerTeste = new Player(new Vector2(positionMap.x + 200f, positionMap.y + 200f), this);
     }
 
     @Override
     public void render(float delta) {
+        view = new ShapeRenderer();
+        view.begin(ShapeRenderer.ShapeType.Line);
+        view.setColor(Color.RED);
         ScreenUtils.clear(Color.DARK_GRAY);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -83,53 +88,104 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     }
 
     private void treatPlayerCollision() {
-        ShapeRenderer view = new ShapeRenderer();
-        view.begin(ShapeRenderer.ShapeType.Line);
-        view.setColor(Color.RED);
-        view.rect(initCollisionMap.x, initCollisionMap.y, map.getWidth() - (53f * 2), map.getHeight() - (46f * 2));
-        view.end();
+        Vector2 velocity = new Vector2(playerTeste.getVelocity());
+        Vector2 position = new Vector2();
+        playerTeste.getCollisionRectangle().getPosition(position);
 
-        if ((playerTeste.getVelocity().x != 0 || playerTeste.getVelocity().y != 0)) {
-            for (Bomb bomb : activeBombsList) {
-                // Calcular coordenadas dos pontos relevantes para a linha superior do jogador
-                Vector2 leftBottomVectorCollision = new Vector2(playerTeste.getCollisionRectangle().getX(), playerTeste.getCollisionRectangle().getY());
-                Vector2 leftTopVectorCollision = new Vector2(playerTeste.getCollisionRectangle().getX(), playerTeste.getCollisionRectangle().getY() + playerTeste.getCollisionRectangle().getHeight());
-                Vector2 rightBottomVectorCollision = new Vector2(playerTeste.getCollisionRectangle().getX() + playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getY());
-                Vector2 rightTopVectorCollision = new Vector2(playerTeste.getCollisionRectangle().getX() + playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getY() + playerTeste.getCollisionRectangle().getHeight());
+        // Trata colisões verticais
+        handleVerticalCollisions(position, velocity);
 
-                if (playerTeste.getVelocity().y < 0) {
-                    leftBottomVectorCollision.y += playerTeste.getVelocity().y;
-                    rightBottomVectorCollision.y += playerTeste.getVelocity().y;
-                    if ((Intersector.intersectSegments(leftBottomVectorCollision, leftTopVectorCollision, bomb.leftTopVectorCollision(), bomb.rightTopVectorCollision(), new Vector2())
-                            || Intersector.intersectSegments(rightBottomVectorCollision, rightTopVectorCollision, bomb.leftTopVectorCollision(), bomb.rightTopVectorCollision(), new Vector2())))
-                        playerTeste.getVelocity().y = 0;
-                } else if (playerTeste.getVelocity().y > 0) {
-                    leftTopVectorCollision.y += playerTeste.getVelocity().y;
-                    rightTopVectorCollision.y += playerTeste.getVelocity().y;
-                    if ((Intersector.intersectSegments(leftBottomVectorCollision, leftTopVectorCollision, bomb.leftBottomVectorCollision(), bomb.rightBottomVectorCollision(), new Vector2())
-                            || Intersector.intersectSegments(rightBottomVectorCollision, rightTopVectorCollision, bomb.leftBottomVectorCollision(), bomb.rightBottomVectorCollision(), new Vector2())))
-                        playerTeste.getVelocity().y = 0;
-                } else if (playerTeste.getVelocity().x > 0) {
-                    rightTopVectorCollision.x += playerTeste.getVelocity().x;
-                    rightBottomVectorCollision.x += playerTeste.getVelocity().x;
-                    if ((Intersector.intersectSegments(leftBottomVectorCollision, rightBottomVectorCollision, bomb.leftBottomVectorCollision(), bomb.leftTopVectorCollision(), new Vector2())
-                            || Intersector.intersectSegments(leftTopVectorCollision, rightTopVectorCollision, bomb.leftBottomVectorCollision(), bomb.leftTopVectorCollision(), new Vector2())))
-                        playerTeste.getVelocity().x = 0;
-                } else if (playerTeste.getVelocity().x < 0) {
-                    leftTopVectorCollision.x += playerTeste.getVelocity().x;
-                    leftBottomVectorCollision.x += playerTeste.getVelocity().x;
-                    if ((Intersector.intersectSegments(leftBottomVectorCollision, rightBottomVectorCollision, bomb.rightBottomVectorCollision(), bomb.rightTopVectorCollision(), new Vector2())
-                            || Intersector.intersectSegments(leftTopVectorCollision, rightTopVectorCollision, bomb.rightBottomVectorCollision(), bomb.rightTopVectorCollision(), new Vector2())))
-                        playerTeste.getVelocity().x = 0;
+        // Trata colisões horizontais
+        handleHorizontalCollisions(position, velocity);
+
+        playerTeste.setVelocity(velocity);
+    }
+
+    private void handleVerticalCollisions(Vector2 position, Vector2 velocity) {
+        for (int i = 0; i < Math.abs(velocity.y); i++) {
+            float oldPosition = position.y;
+            position.y += Math.signum(velocity.y);
+            Rectangle playerMovementRectangle = new Rectangle(position.x, position.y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
+            Rectangle rectangleIntersection = new Rectangle(playerMovementRectangle);
+            if (isCollision(playerMovementRectangle, rectangleIntersection)) {
+                if (rectangleIntersection.getWidth() <= (playerTeste.getCollisionRectangle().getWidth() * .5f) && rectangleIntersection.getWidth() > (playerTeste.getCollisionRectangle().getWidth() * .22f)) {
+                    if ((rectangleIntersection.y > playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x) || (rectangleIntersection.y == playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x)) {
+                        playerTeste.getCollisionRectangle().x += Player.ACCELERATE_PLAYER;
+                        playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_3);
+                    } else {
+                        playerTeste.getCollisionRectangle().x -= Player.ACCELERATE_PLAYER;
+                        playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_2);
+                    }
+                    playerTeste.getCollisionRectangle().y = oldPosition - velocity.y;
+                    break;
+                } else if (rectangleIntersection.getWidth() <= (playerTeste.getCollisionRectangle().getWidth() * .22f)) {
+                    if ((rectangleIntersection.y > playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x) || (rectangleIntersection.y == playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x)) {
+                        playerTeste.getCollisionRectangle().x += Player.ACCELERATE_PLAYER / 2f;
+                    } else {
+                        playerTeste.getCollisionRectangle().x -= Player.ACCELERATE_PLAYER / 2f;
+                    }
+                    if (velocity.y > 0)
+                        playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_4);
+                    else
+                        playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_1);
+                    break;
                 }
-            }
-
-            Rectangle viewRectangle = new Rectangle(initCollisionMap.x, initCollisionMap.y, map.getWidth() - (53f * 2), map.getHeight() - (46f * 2));
-            Rectangle retanglePlayerMoviment = new Rectangle(playerTeste.getCollisionRectangle().x + playerTeste.getVelocity().x, playerTeste.getCollisionRectangle().y + playerTeste.getVelocity().y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
-            if (!viewRectangle.contains(retanglePlayerMoviment)) {
-                playerTeste.stop();
+                playerTeste.getCollisionRectangle().y = oldPosition;
+                velocity.y = 0;
+                break;
             }
         }
+    }
+
+    private void handleHorizontalCollisions(Vector2 position, Vector2 velocity) {
+        for (int i = 0; i < Math.abs(velocity.x); i++) {
+            float oldPosition = position.x;
+            position.x += Math.signum(velocity.x);
+            Rectangle playerMovementRectangle = new Rectangle(position.x, position.y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
+            Rectangle rectangleIntersection = new Rectangle(playerMovementRectangle);
+            if (isCollision(playerMovementRectangle, rectangleIntersection)) {
+                if (rectangleIntersection.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .5f) && rectangleIntersection.getHeight() > (playerTeste.getCollisionRectangle().getHeight() * .22f)) {
+                    if ((rectangleIntersection.x > playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y) || (rectangleIntersection.x == playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y)) {
+                        playerTeste.getCollisionRectangle().y += Player.ACCELERATE_PLAYER;
+                        playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_4);
+                    } else {
+                        playerTeste.getCollisionRectangle().y -= Player.ACCELERATE_PLAYER;
+                        playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_1);
+                    }
+                    playerTeste.getCollisionRectangle().x = oldPosition - velocity.x;
+                    break;
+                } else if (rectangleIntersection.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .22f)) {
+                    if ((rectangleIntersection.x > playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y) || (rectangleIntersection.x == playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y)) {
+                        playerTeste.getCollisionRectangle().y += Player.ACCELERATE_PLAYER / 2f;
+                    } else {
+                        playerTeste.getCollisionRectangle().y -= Player.ACCELERATE_PLAYER / 2f;
+                    }
+                    if (velocity.x > 0)
+                        playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_3);
+                    else
+                        playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_2);
+                    break;
+                }
+                playerTeste.getCollisionRectangle().x = oldPosition;
+                velocity.x = 0;
+                break;
+            }
+        }
+    }
+
+    private boolean isCollision(Rectangle playerMovementRectangle, Rectangle rectangleIntersection) {
+        return !initCollisionMap.contains(playerMovementRectangle) || isCollisionWithBombs(playerMovementRectangle, rectangleIntersection);
+    }
+
+    private boolean isCollisionWithBombs(Rectangle playerMovementRectangle, Rectangle rectangleIntersection) {
+        for (Bomb bomb : activeBombsList) {
+            if (bomb.isCollisionActive()) {
+                if (Intersector.intersectRectangles(playerMovementRectangle, bomb.getCollisionRectangle(), rectangleIntersection)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -156,6 +212,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     public void dispose() {
         map.dispose();
         playerTeste.dispose();
+        view.dispose();
         for (Bomb bomb : activeBombsList) {
             bomb.dispose();
         }
@@ -164,7 +221,6 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     @Override
     public void pressUp(boolean isTypeKeyPressDOWN) {
         if (!isTypeKeyPressDOWN) {
-            playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_4);
             playerTeste.setCollunsFrames(Player.COLLUNS_FRAMES_STOP);
             playerTeste.stop();
         } else {
@@ -177,7 +233,6 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     @Override
     public void pressDown(boolean isTypeKeyPressDOWN) {
         if (!isTypeKeyPressDOWN) {
-            playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_1);
             playerTeste.setCollunsFrames(Player.COLLUNS_FRAMES_STOP);
             playerTeste.stop();
         } else {
@@ -190,7 +245,6 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     @Override
     public void pressLeft(boolean isTypeKeyPressDOWN) {
         if (!isTypeKeyPressDOWN) {
-            playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_2);
             playerTeste.setCollunsFrames(Player.COLLUNS_FRAMES_STOP);
             playerTeste.stop();
         } else {
@@ -203,7 +257,6 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     @Override
     public void pressRight(boolean isTypeKeyPressDOWN) {
         if (!isTypeKeyPressDOWN) {
-            playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_3);
             playerTeste.setCollunsFrames(Player.COLLUNS_FRAMES_STOP);
             playerTeste.stop();
         } else {
@@ -215,10 +268,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
 
     @Override
     public void pressActionA(boolean isTypeKeyPressDOWN) {
-        if (isTypeKeyPressDOWN) {
-            Bomb bomb = new Bomb(new Vector2(playerTeste.getFrames()[0][0].getRegionWidth() / 2f + playerTeste.getPosition().x, playerTeste.getPosition().y), this);
-            activeBombsList.add(bomb);
-        }
+        playerTeste.setPlantBombActive(isTypeKeyPressDOWN);
     }
 
     @Override
@@ -236,18 +286,41 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
 
 
     private void renderAnimationFrames(float incrementStateTime) {
-        playerTeste.update(incrementStateTime, playerTeste.getRowFrame(), playerTeste.getCollunsFrames());
+        playerTeste.update(playerTeste.getRowFrame(), playerTeste.getCollunsFrames());
+        view.rect(playerTeste.getCollisionRectangle().x, playerTeste.getCollisionRectangle().y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
+        view.end();
         getGameManager().batch.begin();
         getGameManager().batch.draw(playerTeste.getCurrentFrame(incrementStateTime), playerTeste.getPosition().x, playerTeste.getPosition().y);
         getGameManager().batch.end();
     }
 
     private void renderObjectsFrames(float delta) {
+        if (playerTeste.isPlantBombActive()) {
+            boolean overlaps = false;
+            if (!activeBombsList.isEmpty()) {
+                for (Bomb bomb : activeBombsList) {
+                    if (playerTeste.getCollisionRectangle().overlaps(bomb.getCollisionRectangle())) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!overlaps) {
+                Bomb bomb = new Bomb(new Vector2(playerTeste.getCollisionRectangle().x, playerTeste.getCollisionRectangle().y), this);
+                activeBombsList.add(bomb);
+            }
+        }
+
         if (!activeBombsList.isEmpty()) {
             getGameManager().batch.begin();
             for (Bomb bomb : activeBombsList) {
-                bomb.update(delta);
+                bomb.update();
+                if (!playerTeste.getCollisionRectangle().overlaps(bomb.getCollisionRectangle())) {
+                    bomb.setCollisionActive(true);
+                }
                 getGameManager().batch.draw(bomb.getCurrentFrame(delta), bomb.getPosition().x, bomb.getPosition().y);
+                view.rect(bomb.getCollisionRectangle().x, bomb.getCollisionRectangle().y, bomb.getCollisionRectangle().getWidth(), bomb.getCollisionRectangle().getHeight());
             }
             getGameManager().batch.end();
         }
