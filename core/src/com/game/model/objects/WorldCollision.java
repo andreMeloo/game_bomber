@@ -9,9 +9,9 @@ public class WorldCollision {
     public static Texture colisionBlockUniversal;
     public static float WIDTH_COLLISION_UNIVERSAL = 0f;
     public static float HEIGHT_COLLISION_UNIVERSAL = 0f;
-    public static final String BLOCK = "block-colision.png";
+    public static final String BLOCK = "fixed-block-colision.png";
 
-    private Rectangle collision;
+    private Rectangle rectangleCollision;
 
     public static void init() {
         colisionBlockUniversal = new Texture(Gdx.files.internal(BLOCK));
@@ -21,14 +21,14 @@ public class WorldCollision {
     }
 
     public WorldCollision(Vector2 position) {
-        collision = new Rectangle(position.x, position.y, WIDTH_COLLISION_UNIVERSAL, HEIGHT_COLLISION_UNIVERSAL);
+        rectangleCollision = new Rectangle(position.x, position.y, WIDTH_COLLISION_UNIVERSAL, HEIGHT_COLLISION_UNIVERSAL);
     }
 
     public Rectangle getCollision() {
-        return collision;
+        return rectangleCollision;
     }
 
     public void setCollision(Rectangle collision) {
-        this.collision = collision;
+        this.rectangleCollision = collision;
     }
 }

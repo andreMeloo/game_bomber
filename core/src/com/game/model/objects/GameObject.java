@@ -21,7 +21,7 @@ public class GameObject {
     private Texture animationSheet;
     private TextureRegion[][] frames;
     private Array<TextureRegion> animationFrames;
-    private int currentDirectionMove;
+    private GameObjectAttributes attributes;
 
     public GameObject(Vector2 position, Screen screen) {
         this.screen = screen;
@@ -38,12 +38,6 @@ public class GameObject {
         updateCollisionRectangle();
         updatePositionAnimation();
         updateAnimationFrames();
-    }
-
-    public void update(int row, int coluns) {
-        updateCollisionRectangle();
-        updatePositionAnimation();
-        updateAnimationFrames(coluns, row);
     }
 
     public void accelerate(float accelerationX, float accelerationY) {
@@ -73,15 +67,6 @@ public class GameObject {
 
         for (int i = 0; i < rows; i++) {
             int coluns = frames[i].length;
-            for (int j = 0; j < coluns; j++) {
-                animationFrames.add(frames[i][j]);
-            }
-        }
-    }
-
-    public void updateAnimationFrames(int coluns, int row) {
-        animationFrames = new Array<>();
-        for (int i = row - 1; i < row; i++) {
             for (int j = 0; j < coluns; j++) {
                 animationFrames.add(frames[i][j]);
             }
@@ -138,14 +123,6 @@ public class GameObject {
         this.frames = frames;
     }
 
-    public int getCurrentDirectionMove() {
-        return currentDirectionMove;
-    }
-
-    public void setCurrentDirectionMove(int currentDirectionMove) {
-        this.currentDirectionMove = currentDirectionMove;
-    }
-
     public Array<TextureRegion> getAnimationFrames() {
         return animationFrames;
     }
@@ -176,5 +153,13 @@ public class GameObject {
 
     public void setWidth(float width) {
         this.width = width;
+    }
+
+    public GameObjectAttributes getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(GameObjectAttributes attributes) {
+        this.attributes = attributes;
     }
 }

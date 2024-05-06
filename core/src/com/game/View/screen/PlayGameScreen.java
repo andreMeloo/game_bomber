@@ -5,6 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
@@ -13,9 +14,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.game.controller.GameManager;
 import com.game.controller.InputManager;
 import com.game.model.controls.GameControl;
-import com.game.model.objects.Bomb;
-import com.game.model.objects.Player;
-import com.game.model.objects.WorldCollision;
+import com.game.model.objects.*;
 
 import java.util.*;
 
@@ -37,7 +36,8 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
      * Objects
      */
     private List<Bomb> activeBombsList;
-    private List<WorldCollision> fixedWallColision;
+    private LinkedList<Explosion> activeExplosionsList;
+    private List<FixedWallCollsion> fixedWallColision;
 
     /**
      * Config State
@@ -58,6 +58,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     public void show() {
         stateTime = 0f;
         activeBombsList = new ArrayList<>();
+        activeExplosionsList = new LinkedList<>();
         gridPositionMap = new Rectangle[(int) COLLUNS_GRID_POSITION][(int) LINES_GRID_POSITION];
         fixedWallColision = new ArrayList<>();
         WorldCollision.init();
@@ -83,6 +84,10 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         getGameManager().batch.begin();
         getGameManager().batch.draw(map, positionMap.x, positionMap.y);
 
+        fixedWallColision.forEach(v -> {
+            view.rect(v.getCollision().x, v.getCollision().y, v.getCollision().getWidth(), v.getCollision().getHeight());
+        });
+
         renderObjectsFrames(delta);
         treatPlayerCollision();
         renderAnimationFrames(delta);
@@ -105,17 +110,20 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     }
 
     private void handleVerticalCollisions(Vector2 position, Vector2 velocity) {
-        for (int i = 0; i < Math.abs(velocity.y); i++) {
-            boolean collisionBomb = false;
+        float remainingMovement = Math.abs(velocity.y);
+
+        while (remainingMovement > 0) {
+            boolean collisionBomb;
             float oldPosition = position.y;
 
-            position.y += Math.signum(velocity.y);
+            float movement = Math.min(1.0f, remainingMovement);
+            position.y += Math.signum(velocity.y) * movement;
             Rectangle playerMovementRectangle = new Rectangle(position.x, position.y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
             Rectangle rectangleIntersection = new Rectangle(playerMovementRectangle);
             collisionBomb = isCollisionWithBombs(playerMovementRectangle);
             if (isCollisionWallsOrMap(playerMovementRectangle, rectangleIntersection) || collisionBomb) {
                 if (!collisionBomb) {
-                    if (rectangleIntersection.getWidth() <= (playerTeste.getCollisionRectangle().getWidth() * .5f) && rectangleIntersection.getWidth() > (playerTeste.getCollisionRectangle().getWidth() * .22f)) {
+                    if (rectangleIntersection.getWidth() <= (playerTeste.getCollisionRectangle().getWidth() * .7f) && rectangleIntersection.getWidth() > (playerTeste.getCollisionRectangle().getWidth() * .25f)) {
                         if ((rectangleIntersection.y > playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x) || (rectangleIntersection.y == playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x)) {
                             playerTeste.getCollisionRectangle().x += Player.ACCELERATE_PLAYER;
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_3);
@@ -123,13 +131,22 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
                             playerTeste.getCollisionRectangle().x -= Player.ACCELERATE_PLAYER;
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_2);
                         }
-                        playerTeste.getCollisionRectangle().y = oldPosition - velocity.y;
+                        playerTeste.getCollisionRectangle().y = Math.abs(oldPosition - velocity.y);
                         break;
-                    } else if (rectangleIntersection.getWidth() <= (playerTeste.getCollisionRectangle().getWidth() * .22f)) {
+                    } else if (rectangleIntersection.getWidth() <= (playerTeste.getCollisionRectangle().getWidth() * .25f)) {
+                        int round = Math.round(Math.abs(Player.ACCELERATE_PLAYER) / 2f);
                         if ((rectangleIntersection.y > playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x) || (rectangleIntersection.y == playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x)) {
-                            playerTeste.getCollisionRectangle().x += Player.ACCELERATE_PLAYER / 2f;
+                            if (round > rectangleIntersection.width) {
+                                playerTeste.getCollisionRectangle().x += rectangleIntersection.width;
+                            } else {
+                                playerTeste.getCollisionRectangle().x += Math.round(Player.ACCELERATE_PLAYER / 2f);
+                            }
                         } else {
-                            playerTeste.getCollisionRectangle().x -= Player.ACCELERATE_PLAYER / 2f;
+                            if (round > rectangleIntersection.width) {
+                                playerTeste.getCollisionRectangle().x -= rectangleIntersection.width;
+                            } else {
+                                playerTeste.getCollisionRectangle().x -= Math.round(Player.ACCELERATE_PLAYER / 2f);
+                            }
                         }
                         if (velocity.y > 0)
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_4);
@@ -138,25 +155,28 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
                         break;
                     }
                 }
-                playerTeste.getCollisionRectangle().y = oldPosition;
-                velocity.y = 0;
+                playerTeste.getCollisionRectangle().y = oldPosition - velocity.y;
                 break;
             }
+            remainingMovement -= movement;
         }
     }
 
     private void handleHorizontalCollisions(Vector2 position, Vector2 velocity) {
-        for (int i = 0; i < Math.abs(velocity.x); i++) {
-            boolean collisionBomb = false;
+        float remainingMovement = Math.abs(velocity.x);
+
+        while (remainingMovement > 0) {
+            boolean collisionBomb;
             float oldPosition = position.x;
 
-            position.x += Math.signum(velocity.x);
+            float movement = Math.min(1.0f, remainingMovement);
+            position.x += Math.signum(velocity.x) * movement;
             Rectangle playerMovementRectangle = new Rectangle(position.x, position.y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
             Rectangle rectangleIntersection = new Rectangle(playerMovementRectangle);
             collisionBomb = isCollisionWithBombs(playerMovementRectangle);
             if (isCollisionWallsOrMap(playerMovementRectangle, rectangleIntersection) || collisionBomb) {
                 if (!collisionBomb) {
-                    if (rectangleIntersection.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .5f) && rectangleIntersection.getHeight() > (playerTeste.getCollisionRectangle().getHeight() * .22f)) {
+                    if (rectangleIntersection.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .9f) && rectangleIntersection.getHeight() > (playerTeste.getCollisionRectangle().getHeight() * .25f)) {
                         if ((rectangleIntersection.x > playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y) || (rectangleIntersection.x == playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y)) {
                             playerTeste.getCollisionRectangle().y += Player.ACCELERATE_PLAYER;
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_4);
@@ -164,13 +184,22 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
                             playerTeste.getCollisionRectangle().y -= Player.ACCELERATE_PLAYER;
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_1);
                         }
-                        playerTeste.getCollisionRectangle().x = oldPosition - velocity.x;
+                        playerTeste.getCollisionRectangle().x = Math.abs(oldPosition - velocity.x);
                         break;
-                    } else if (rectangleIntersection.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .22f)) {
+                    } else if (rectangleIntersection.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .25f)) {
+                        int round = Math.round(Math.abs(Player.ACCELERATE_PLAYER) / 2f);
                         if ((rectangleIntersection.x > playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y) || (rectangleIntersection.x == playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y)) {
-                            playerTeste.getCollisionRectangle().y += Player.ACCELERATE_PLAYER / 2f;
+                            if (round > rectangleIntersection.height) {
+                                playerTeste.getCollisionRectangle().y += rectangleIntersection.height;
+                            } else {
+                                playerTeste.getCollisionRectangle().y += Math.round(Player.ACCELERATE_PLAYER / 2f);
+                            }
                         } else {
-                            playerTeste.getCollisionRectangle().y -= Player.ACCELERATE_PLAYER / 2f;
+                            if (round > rectangleIntersection.height) {
+                                playerTeste.getCollisionRectangle().y -= rectangleIntersection.height;
+                            } else {
+                                playerTeste.getCollisionRectangle().y -= Math.round(Player.ACCELERATE_PLAYER / 2f);
+                            }
                         }
                         if (velocity.x > 0)
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_3);
@@ -179,10 +208,10 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
                         break;
                     }
                 }
-                playerTeste.getCollisionRectangle().x = oldPosition;
-                velocity.x = 0;
+                playerTeste.getCollisionRectangle().x = Math.abs(oldPosition - velocity.x);
                 break;
             }
+            remainingMovement -= movement;
         }
     }
 
@@ -217,7 +246,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
                 gridPositionMap[i][j] = new Rectangle(positionInitial.x + 1f + (WorldCollision.WIDTH_COLLISION_UNIVERSAL * i), positionInitial.y + 1f + (WorldCollision.HEIGHT_COLLISION_UNIVERSAL * j), WorldCollision.WIDTH_COLLISION_UNIVERSAL, WorldCollision.HEIGHT_COLLISION_UNIVERSAL);
 
                 if (i % 2 != 0 && j % 2 != 0) {
-                    fixedWallColision.add(new WorldCollision(new Vector2(gridPositionMap[i][j].x, gridPositionMap[i][j].y)));
+                    fixedWallColision.add(new FixedWallCollsion(new Vector2(gridPositionMap[i][j].x, gridPositionMap[i][j].y)));
                 }
             }
         }
@@ -231,13 +260,57 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     }
 
     private void renderObjectsFrames(float delta) {
+        if (!activeExplosionsList.isEmpty()) {
+            Iterator<Explosion> it = activeExplosionsList.descendingIterator();
+
+            while (it.hasNext()) {
+                Explosion explosion = it.next();
+                if (explosion.isFinish()) {
+                    explosion.getExplosionsArms().forEach(v -> { v.values().forEach(GameObject::dispose); });
+                    explosion.dispose();
+                    it.remove();
+                } else {
+                    activeBombsList.forEach(bomb -> {
+                        if (explosion.getCollisionRectangle().overlaps(bomb.getCollisionRectangle())) {
+                            bomb.setExplode(true);
+                        } else {
+                            explosion.getExplosionsArms().forEach(v -> {
+                                v.values().forEach(armExplosion -> {
+                                    if (armExplosion.getCollisionRectangle().overlaps(bomb.getCollisionRectangle())) {
+                                        bomb.setExplode(true);
+                                    }
+                                });
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        if (!activeBombsList.isEmpty()) {
+            Iterator<Bomb> it = activeBombsList.iterator();
+
+            while (it.hasNext()) {
+                Bomb bomb = it.next();
+                if (bomb.isExplode()) {
+                    activeExplosionsList.push(new Explosion(new Vector2(bomb.getCollisionRectangle().x, bomb.getCollisionRectangle().y), this, 5));
+
+                    bomb.dispose();
+                    it.remove();
+                }
+            }
+        }
+
         if (playerTeste.isPlantBombActive()) {
             boolean overlaps = false;
             if (!activeBombsList.isEmpty()) {
                 for (Bomb bomb : activeBombsList) {
-                    if (playerTeste.getCollisionRectangle().overlaps(bomb.getCollisionRectangle())) {
-                        overlaps = true;
-                        break;
+                    Rectangle intersect = new Rectangle();
+                    if (Intersector.intersectRectangles(playerTeste.getCollisionRectangle(), bomb.getCollisionRectangle(), intersect)) {
+                        if (intersect.area() > (playerTeste.getCollisionRectangle().area() * 0.1)) {
+                            overlaps = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -267,14 +340,43 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
             }
         }
 
+        if (!activeExplosionsList.isEmpty()) {
+            for (Explosion explosion : activeExplosionsList) {
+                explosion.update();
+
+                TextureRegion currentFrame = explosion.getCurrentFrame(delta);
+
+                if (!explosion.isFinish()) {
+                    if ((!explosion.isCenterCollision() && !explosion.getExplosionsArms().isEmpty()) || (explosion.isCenterCollision() && !explosion.getExplosionsArms().isEmpty()) || (!explosion.isCenterCollision() && explosion.getExplosionsArms().isEmpty())) {
+                        getGameManager().batch.draw(currentFrame, explosion.getPosition().x, explosion.getPosition().y);
+                        view.rect(explosion.getCollisionRectangle().x, explosion.getCollisionRectangle().y, explosion.getCollisionRectangle().getWidth(), explosion.getCollisionRectangle().getHeight());
+                    }
+
+                    explosion.getExplosionsArms().forEach(expArms -> {
+                        expArms.values().forEach(explosionArm -> {
+                            explosionArm.update();
+                            getGameManager().batch.draw(explosionArm.getCurrentFrame(delta), explosionArm.getPosition().x, explosionArm.getPosition().y);
+                            view.rect(explosionArm.getCollisionRectangle().x, explosionArm.getCollisionRectangle().y, explosionArm.getCollisionRectangle().getWidth(), explosionArm.getCollisionRectangle().getHeight());
+                        });
+                    });
+                }
+            }
+        }
+
         if (!activeBombsList.isEmpty()) {
             for (Bomb bomb : activeBombsList) {
                 bomb.update();
+
+                TextureRegion currentFrame = bomb.getCurrentFrame(delta);
+
                 if (!playerTeste.getCollisionRectangle().overlaps(bomb.getCollisionRectangle())) {
                     bomb.setCollisionActive(true);
                 }
-                getGameManager().batch.draw(bomb.getCurrentFrame(delta), bomb.getPosition().x, bomb.getPosition().y);
-                view.rect(bomb.getCollisionRectangle().x, bomb.getCollisionRectangle().y, bomb.getCollisionRectangle().getWidth(), bomb.getCollisionRectangle().getHeight());
+
+                if (!bomb.isExplode()) {
+                    getGameManager().batch.draw(currentFrame, bomb.getPosition().x, bomb.getPosition().y);
+                    view.rect(bomb.getCollisionRectangle().x, bomb.getCollisionRectangle().y, bomb.getCollisionRectangle().getWidth(), bomb.getCollisionRectangle().getHeight());
+                }
             }
         }
     }
@@ -306,6 +408,12 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         view.dispose();
         for (Bomb bomb : activeBombsList) {
             bomb.dispose();
+        }
+        for (Explosion explosion : activeExplosionsList) {
+            explosion.getExplosionsArms().forEach( v -> {
+                v.values().forEach(GameObject::dispose);
+            });
+            explosion.dispose();
         }
     }
 
@@ -381,5 +489,37 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
 
     public void setStateTime(float stateTime) {
         this.stateTime = stateTime;
+    }
+
+    public List<Bomb> getActiveBombsList() {
+        return activeBombsList;
+    }
+
+    public void setActiveBombsList(List<Bomb> activeBombsList) {
+        this.activeBombsList = activeBombsList;
+    }
+
+    public LinkedList<Explosion> getActiveExplosionsList() {
+        return activeExplosionsList;
+    }
+
+    public void setActiveExplosionsList(LinkedList<Explosion> activeExplosionsList) {
+        this.activeExplosionsList = activeExplosionsList;
+    }
+
+    public List<FixedWallCollsion> getFixedWallColision() {
+        return fixedWallColision;
+    }
+
+    public void setFixedWallColision(List<FixedWallCollsion> fixedWallColision) {
+        this.fixedWallColision = fixedWallColision;
+    }
+
+    public Rectangle getCollisionMap() {
+        return collisionMap;
+    }
+
+    public void setCollisionMap(Rectangle collisionMap) {
+        this.collisionMap = collisionMap;
     }
 }
