@@ -38,6 +38,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
     private List<Bomb> activeBombsList;
     private LinkedList<Explosion> activeExplosionsList;
     private List<FixedWallCollsion> fixedWallColision;
+    private List<PowerAttribute> attributes;
 
     /**
      * Config State
@@ -59,6 +60,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         stateTime = 0f;
         activeBombsList = new ArrayList<>();
         activeExplosionsList = new LinkedList<>();
+        attributes = new ArrayList<>();
         gridPositionMap = new Rectangle[(int) COLLUNS_GRID_POSITION][(int) LINES_GRID_POSITION];
         fixedWallColision = new ArrayList<>();
         WorldCollision.init();
@@ -90,6 +92,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
 
         renderObjectsFrames(delta);
         treatPlayerCollision();
+        treatCollisionWithPowerAttributes();
         renderAnimationFrames(delta);
         getGameManager().batch.end();
         view.end();
@@ -109,6 +112,33 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         playerTeste.setVelocity(velocity);
     }
 
+    private void treatCollisionWithPowerAttributes() {
+        attributes.removeIf(attributeSpeed -> {
+            Rectangle rectangleIntersection = new Rectangle();
+
+            if (Intersector.intersectRectangles(playerTeste.getCollisionRectangle(), attributeSpeed.getCollisionRectangle(), rectangleIntersection)) {
+                if (playerTeste.getVelocity().x != 0 || playerTeste.getVelocity().y != 0) {
+                    float valueIntersection = playerTeste.getVelocity().x != 0 && playerTeste.getVelocity().y == 0 ? rectangleIntersection.getWidth() : rectangleIntersection.getHeight();
+                    float valueAttribute = playerTeste.getVelocity().x != 0 && playerTeste.getVelocity().y == 0 ? attributeSpeed.getCollisionRectangle().getWidth() : attributeSpeed.getCollisionRectangle().getHeight();
+
+                    if (valueIntersection > (valueAttribute / 2)) {
+                        // Atualiza o atributo do jogador
+                        playerTeste.getAttributes().setAttribute(
+                                attributeSpeed.getPrincipalAttribute().getName(),
+                                (Float) playerTeste.getAttributes().getAttribute(attributeSpeed.getPrincipalAttribute().getName()) +
+                                        attributeSpeed.getPrincipalAttribute().getValor(Float.class)
+                        );
+
+                        // Realiza o dispose do item
+                        attributeSpeed.dispose();
+                        return true;  // Remove o elemento da lista
+                    }
+                }
+            }
+            return false;  // Mantém o elemento na lista
+        });
+    }
+
     private void handleVerticalCollisions(Vector2 position, Vector2 velocity) {
         float remainingMovement = Math.abs(velocity.y);
 
@@ -120,32 +150,33 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
             position.y += Math.signum(velocity.y) * movement;
             Rectangle playerMovementRectangle = new Rectangle(position.x, position.y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
             Rectangle rectangleIntersection = new Rectangle(playerMovementRectangle);
-            collisionBomb = isCollisionWithBombs(playerMovementRectangle);
+            Rectangle rectangleIntersectionBomb = new Rectangle();
+            collisionBomb = isCollisionWithBombs(playerMovementRectangle, rectangleIntersectionBomb);
             if (isCollisionWallsOrMap(playerMovementRectangle, rectangleIntersection) || collisionBomb) {
                 if (!collisionBomb) {
                     if (rectangleIntersection.getWidth() <= (playerTeste.getCollisionRectangle().getWidth() * .7f) && rectangleIntersection.getWidth() > (playerTeste.getCollisionRectangle().getWidth() * .25f)) {
                         if ((rectangleIntersection.y > playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x) || (rectangleIntersection.y == playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x)) {
-                            playerTeste.getCollisionRectangle().x += Player.ACCELERATE_PLAYER;
+                            playerTeste.getCollisionRectangle().x += (Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName());
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_3);
                         } else {
-                            playerTeste.getCollisionRectangle().x -= Player.ACCELERATE_PLAYER;
+                            playerTeste.getCollisionRectangle().x -= (Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName());
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_2);
                         }
                         playerTeste.getCollisionRectangle().y = Math.abs(oldPosition - velocity.y);
                         break;
                     } else if (rectangleIntersection.getWidth() <= (playerTeste.getCollisionRectangle().getWidth() * .25f)) {
-                        int round = Math.round(Math.abs(Player.ACCELERATE_PLAYER) / 2f);
+                        int round = Math.round(Math.abs((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName())) / 2f);
                         if ((rectangleIntersection.y > playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x) || (rectangleIntersection.y == playerMovementRectangle.y && rectangleIntersection.x == playerMovementRectangle.x)) {
                             if (round > rectangleIntersection.width) {
                                 playerTeste.getCollisionRectangle().x += rectangleIntersection.width;
                             } else {
-                                playerTeste.getCollisionRectangle().x += Math.round(Player.ACCELERATE_PLAYER / 2f);
+                                playerTeste.getCollisionRectangle().x += Math.round((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName()) / 2f);
                             }
                         } else {
                             if (round > rectangleIntersection.width) {
                                 playerTeste.getCollisionRectangle().x -= rectangleIntersection.width;
                             } else {
-                                playerTeste.getCollisionRectangle().x -= Math.round(Player.ACCELERATE_PLAYER / 2f);
+                                playerTeste.getCollisionRectangle().x -= Math.round((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName()) / 2f);
                             }
                         }
                         if (velocity.y > 0)
@@ -155,7 +186,13 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
                         break;
                     }
                 }
-                playerTeste.getCollisionRectangle().y = oldPosition - velocity.y;
+                if (velocity.y > 0 && collisionBomb) {
+                    playerTeste.getCollisionRectangle().y = Math.abs((rectangleIntersectionBomb.y - playerTeste.getCollisionRectangle().height) - velocity.y );
+                } else if (velocity.y  < 0 && collisionBomb){
+                    playerTeste.getCollisionRectangle().y = Math.abs((rectangleIntersectionBomb.y + rectangleIntersectionBomb.height) - velocity.y );
+                } else {
+                    playerTeste.getCollisionRectangle().y = Math.abs(oldPosition - velocity.y);
+                }
                 break;
             }
             remainingMovement -= movement;
@@ -172,33 +209,34 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
             float movement = Math.min(1.0f, remainingMovement);
             position.x += Math.signum(velocity.x) * movement;
             Rectangle playerMovementRectangle = new Rectangle(position.x, position.y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
-            Rectangle rectangleIntersection = new Rectangle(playerMovementRectangle);
-            collisionBomb = isCollisionWithBombs(playerMovementRectangle);
-            if (isCollisionWallsOrMap(playerMovementRectangle, rectangleIntersection) || collisionBomb) {
+            Rectangle rectangleIntersectionWalls = new Rectangle(playerMovementRectangle);
+            Rectangle rectangleIntersectionBomb = new Rectangle();
+            collisionBomb = isCollisionWithBombs(playerMovementRectangle, rectangleIntersectionBomb);
+            if (isCollisionWallsOrMap(playerMovementRectangle, rectangleIntersectionWalls) || collisionBomb) {
                 if (!collisionBomb) {
-                    if (rectangleIntersection.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .9f) && rectangleIntersection.getHeight() > (playerTeste.getCollisionRectangle().getHeight() * .25f)) {
-                        if ((rectangleIntersection.x > playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y) || (rectangleIntersection.x == playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y)) {
-                            playerTeste.getCollisionRectangle().y += Player.ACCELERATE_PLAYER;
+                    if (rectangleIntersectionWalls.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .9f) && rectangleIntersectionWalls.getHeight() > (playerTeste.getCollisionRectangle().getHeight() * .25f)) {
+                        if ((rectangleIntersectionWalls.x > playerMovementRectangle.x && rectangleIntersectionWalls.y == playerMovementRectangle.y) || (rectangleIntersectionWalls.x == playerMovementRectangle.x && rectangleIntersectionWalls.y == playerMovementRectangle.y)) {
+                            playerTeste.getCollisionRectangle().y += (Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName());
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_4);
                         } else {
-                            playerTeste.getCollisionRectangle().y -= Player.ACCELERATE_PLAYER;
+                            playerTeste.getCollisionRectangle().y -= (Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName());
                             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_1);
                         }
                         playerTeste.getCollisionRectangle().x = Math.abs(oldPosition - velocity.x);
                         break;
-                    } else if (rectangleIntersection.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .25f)) {
-                        int round = Math.round(Math.abs(Player.ACCELERATE_PLAYER) / 2f);
-                        if ((rectangleIntersection.x > playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y) || (rectangleIntersection.x == playerMovementRectangle.x && rectangleIntersection.y == playerMovementRectangle.y)) {
-                            if (round > rectangleIntersection.height) {
-                                playerTeste.getCollisionRectangle().y += rectangleIntersection.height;
+                    } else if (rectangleIntersectionWalls.getHeight() <= (playerTeste.getCollisionRectangle().getHeight() * .25f)) {
+                        int round = Math.round(Math.abs((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName())) / 2f);
+                        if ((rectangleIntersectionWalls.x > playerMovementRectangle.x && rectangleIntersectionWalls.y == playerMovementRectangle.y) || (rectangleIntersectionWalls.x == playerMovementRectangle.x && rectangleIntersectionWalls.y == playerMovementRectangle.y)) {
+                            if (round > rectangleIntersectionWalls.height) {
+                                playerTeste.getCollisionRectangle().y += rectangleIntersectionWalls.height;
                             } else {
-                                playerTeste.getCollisionRectangle().y += Math.round(Player.ACCELERATE_PLAYER / 2f);
+                                playerTeste.getCollisionRectangle().y += Math.round((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName()) / 2f);
                             }
                         } else {
-                            if (round > rectangleIntersection.height) {
-                                playerTeste.getCollisionRectangle().y -= rectangleIntersection.height;
+                            if (round > rectangleIntersectionWalls.height) {
+                                playerTeste.getCollisionRectangle().y -= rectangleIntersectionWalls.height;
                             } else {
-                                playerTeste.getCollisionRectangle().y -= Math.round(Player.ACCELERATE_PLAYER / 2f);
+                                playerTeste.getCollisionRectangle().y -= Math.round((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName()) / 2f);
                             }
                         }
                         if (velocity.x > 0)
@@ -208,7 +246,13 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
                         break;
                     }
                 }
-                playerTeste.getCollisionRectangle().x = Math.abs(oldPosition - velocity.x);
+                if (velocity.x > 0 && collisionBomb) {
+                    playerTeste.getCollisionRectangle().x = Math.abs((rectangleIntersectionBomb.x - playerTeste.getCollisionRectangle().width) - velocity.x);
+                } else if (velocity.x < 0 && collisionBomb){
+                    playerTeste.getCollisionRectangle().x = Math.abs((rectangleIntersectionBomb.x + rectangleIntersectionBomb.width) - velocity.x);
+                } else {
+                    playerTeste.getCollisionRectangle().x = Math.abs(oldPosition - velocity.x);
+                }
                 break;
             }
             remainingMovement -= movement;
@@ -228,14 +272,17 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         return false;
     }
 
-    private boolean isCollisionWithBombs(Rectangle playerMovementRectangle) {
-        for (Bomb bomb : activeBombsList) {
-            if (bomb.isCollisionActive()) {
-                if (Intersector.intersectRectangles(playerMovementRectangle, bomb.getCollisionRectangle(), new Rectangle())) {
-                    return true;
+    private boolean isCollisionWithBombs(Rectangle playerMovementRectangle, Rectangle rectangleIntersectionBomb) {
+        if (playerTeste.getAttributes().getAttribute(ObjectAttributes.COLLISION_BOMB_OBJECT.getName())) {
+            for (Bomb bomb : activeBombsList) {
+                if (bomb.isCollisionActive()) {
+                    if (Intersector.intersectRectangles(playerMovementRectangle, bomb.getCollisionRectangle(), rectangleIntersectionBomb)) {
+                        return true;
+                    }
                 }
             }
         }
+
         return false;
     }
 
@@ -247,6 +294,14 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
 
                 if (i % 2 != 0 && j % 2 != 0) {
                     fixedWallColision.add(new FixedWallCollsion(new Vector2(gridPositionMap[i][j].x, gridPositionMap[i][j].y)));
+                } else {
+                    if (attributes.isEmpty()) {
+                        attributes.add(new PowerAttribute(
+                                new Vector2(gridPositionMap[i][j].x, gridPositionMap[i][j].y),
+                                this,
+                                ObjectAttributes.SPEED_OBJECT
+                        ));
+                    }
                 }
             }
         }
@@ -255,6 +310,11 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
 
     private void renderAnimationFrames(float incrementStateTime) {
         playerTeste.update(playerTeste.getRowFrame(), playerTeste.getCollunsFrames());
+        attributes.forEach(valor -> {
+            valor.update();
+            view.rect(valor.getCollisionRectangle().x, valor.getCollisionRectangle().y, valor.getCollisionRectangle().getWidth(), valor.getCollisionRectangle().getHeight());
+            getGameManager().batch.draw(valor.getCurrentFrame(incrementStateTime), valor.getPosition().x, valor.getPosition().y);
+        });
         view.rect(playerTeste.getCollisionRectangle().x, playerTeste.getCollisionRectangle().y, playerTeste.getCollisionRectangle().getWidth(), playerTeste.getCollisionRectangle().getHeight());
         getGameManager().batch.draw(playerTeste.getCurrentFrame(incrementStateTime), playerTeste.getPosition().x, playerTeste.getPosition().y);
     }
@@ -293,7 +353,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
             while (it.hasNext()) {
                 Bomb bomb = it.next();
                 if (bomb.isExplode()) {
-                    activeExplosionsList.push(new Explosion(new Vector2(bomb.getCollisionRectangle().x, bomb.getCollisionRectangle().y), this, 5));
+                    activeExplosionsList.push(new Explosion(new Vector2(bomb.getCollisionRectangle().x, bomb.getCollisionRectangle().y), this, playerTeste.getAttributes().getAttribute(ObjectAttributes.POWER_FLAMES_OBJECT.getName())));
 
                     bomb.dispose();
                     it.remove();
@@ -301,7 +361,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
             }
         }
 
-        if (playerTeste.isPlantBombActive()) {
+        if (playerTeste.isPlantBombActive() && activeBombsList.size() < (Integer) playerTeste.getAttributes().getAttribute(ObjectAttributes.NUMBER_BOMBS_OBJECT.getName())) {
             boolean overlaps = false;
             if (!activeBombsList.isEmpty()) {
                 for (Bomb bomb : activeBombsList) {
@@ -425,7 +485,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         } else {
             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_4);
             playerTeste.setCollunsFrames(Player.COLLUNS_FRAMES_MOVE);
-            playerTeste.accelerate(0f, Player.ACCELERATE_PLAYER);
+            playerTeste.accelerate(0f, (Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName()));
         }
     }
 
@@ -437,7 +497,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         } else {
             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_1);
             playerTeste.setCollunsFrames(Player.COLLUNS_FRAMES_MOVE);
-            playerTeste.accelerate(0f, -(Player.ACCELERATE_PLAYER));
+            playerTeste.accelerate(0f, -((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName())));
         }
     }
 
@@ -449,7 +509,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         } else {
             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_2);
             playerTeste.setCollunsFrames(Player.COLLUNS_FRAMES_MOVE);
-            playerTeste.accelerate(-(Player.ACCELERATE_PLAYER), 0f);
+            playerTeste.accelerate(-((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName())), 0f);
         }
     }
 
@@ -461,7 +521,7 @@ public class PlayGameScreen extends ScreenAdapter implements Screen {
         } else {
             playerTeste.setRowFrame(Player.NUMBER_ROW_FRAMES_3);
             playerTeste.setCollunsFrames(Player.COLLUNS_FRAMES_MOVE);
-            playerTeste.accelerate(Player.ACCELERATE_PLAYER, 0f);
+            playerTeste.accelerate((Float) playerTeste.getAttributes().getAttribute(ObjectAttributes.SPEED_OBJECT.getName()), 0f);
         }
     }
 

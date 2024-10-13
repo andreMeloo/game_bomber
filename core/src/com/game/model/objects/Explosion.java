@@ -25,7 +25,7 @@ public class Explosion extends GameObject {
     private static final int TILESET_WIDTH = 7;
     private static final int TILESET_HEIGHT_ARMS = 2;
     private static final int TILESET_HEIGHT_CENTER = 1;
-    public static final float FRAME_DURATION_EXPLOSION = .1f;
+    public static final float FRAME_DURATION_EXPLOSION = .08f;
 
     private List<TreeMap<String, Explosion>> explosionsArms;
     private int powerFlames;

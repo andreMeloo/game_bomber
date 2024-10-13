@@ -5,16 +5,6 @@ import java.util.Map;
 
 public class GameObjectAttributes {
 
-    public static final String SPEED_OBJECT = "SPEED_OBJECT";
-    public static final String NUMBER_BOMBS_OBJECT = "NUMBER_BOMBS_OBJECT";
-    public static final String POWER_FLAMES_OBJECT = "POWER_FLAMES_OBJECT";
-    public static final String THROW_BOMB = "THROW_BOMB";
-    public static final String KICK_BOMB = "KICK_BOMB";
-    public static final String PUNCH_BOMB = "PUNCH_BOMB";
-    public static final String COLLISION_DESTRUCTIVE_WALL_OBJECT = "COLLISION_DESTRUCTIVE_WALL_OBJECT";
-    public static final String COLLISION_BOMB_OBJECT = "COLLISION_BOMB_OBJECT";
-    public static final String COLLISION_EXPLOSION_OBJECT = "COLLISION_EXPLOSION_OBJECT";
-
     Map<String, Attribute<?>> objectAttributes;
 
     public GameObjectAttributes(GameObject gameObject) {
@@ -29,15 +19,15 @@ public class GameObjectAttributes {
     }
 
     private void initializePlayerAttributes() {
-        setAttribute(SPEED_OBJECT, 3f);
-        setAttribute(NUMBER_BOMBS_OBJECT, 1);
-        setAttribute(POWER_FLAMES_OBJECT, 2);
-        setAttribute(THROW_BOMB, false);
-        setAttribute(KICK_BOMB, false);
-        setAttribute(PUNCH_BOMB, false);
-        setAttribute(COLLISION_DESTRUCTIVE_WALL_OBJECT, true);
-        setAttribute(COLLISION_BOMB_OBJECT, true);
-        setAttribute(COLLISION_EXPLOSION_OBJECT, true);
+        setAttribute(ObjectAttributes.SPEED_OBJECT.getName(), 2.75f);
+        setAttribute(ObjectAttributes.NUMBER_BOMBS_OBJECT.getName(), 2);
+        setAttribute(ObjectAttributes.POWER_FLAMES_OBJECT.getName(), 3);
+        setAttribute(ObjectAttributes.THROW_BOMB.getName(), false);
+        setAttribute(ObjectAttributes.KICK_BOMB.getName(), false);
+        setAttribute(ObjectAttributes.PUNCH_BOMB.getName(), false);
+        setAttribute(ObjectAttributes.COLLISION_DESTRUCTIVE_WALL_OBJECT.getName(), true);
+        setAttribute(ObjectAttributes.COLLISION_BOMB_OBJECT.getName(), true);
+        setAttribute(ObjectAttributes.COLLISION_EXPLOSION_OBJECT.getName(), true);
     }
 
     public <T> void setAttribute(String attributeName, T value) {

@@ -17,7 +17,6 @@ public class Player extends GameObject{
     private static final float FRAME_DURATION_PLAYER = .15f;
     private static final int TILESET_WIDTH = 4;
     private static final int TILESET_HEIGHT = 4;
-    public final static float ACCELERATE_PLAYER = 2.75f;
 
     // Atributos para controle dos frames do player
     private int rowFrame;
